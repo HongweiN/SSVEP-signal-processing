@@ -4,10 +4,10 @@ Created on Mon March 25 16:00:31 2019
 
 @author: Brynhildr
 """
+import os
 import numpy as np
 import pylab as pl
 import scipy.io as io
-import os
 import mne
 from mne.io import concatenate_raws
 from mne import Epochs, pick_types, find_events

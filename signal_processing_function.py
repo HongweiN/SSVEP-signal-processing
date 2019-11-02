@@ -13,7 +13,7 @@ Continuously updating...
 2019-10-31:
     4. Time-frequency transform analysis using Morlet wavelet
     
-2019-11-1:
+2019-11-3:
     5. Welch power spectrum analysis
 
 @author: Brynhildr

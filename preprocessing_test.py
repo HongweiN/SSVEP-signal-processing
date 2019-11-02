@@ -4,6 +4,8 @@ Created on Mon March 25 16:00:31 2019
 
 @author: Brynhildr
 """
+
+
 import os
 import numpy as np
 import pylab as pl

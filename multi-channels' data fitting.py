@@ -95,7 +95,7 @@ for i in range(ne):
                     tmax=tmax_m, baseline=None, preload=True)
     epochs_copy = epochs.copy().pick_channels(pick_chans)  # pick channels
     model_data[i,:,:,:] = epochs_copy.get_data()           # get the 4D array
-    # (n_events, n_trials, n_channels, timepoints)
+    # (n_events, n_trials, n_channels, timepoints) at here 1 trial just has 1 epoch
 
 model_data *= 1e6             # reset the units
 
@@ -222,10 +222,10 @@ plt.show()
 '''
 do MLR(multi linear regression) repeatedly and return R^2 and coefficients array
 
-model = LinearRegression().fit(X,y): X(n_points, n_inputs) & y(n_points, n_outpus)
+model = LinearRegression().fit(X,y): X(n_times, n_inputs) & y(n_times, n_outpus)
 
-input model: 4D array (n_events, n_trials, n_channels, n_points)
-output model: 3D array (n_events, n_trials, n_points)
+input model: 4D array (n_events, n_trials, n_channels, n_times)
+output model: 3D array (n_events, n_trials, n_times)
 (default: use multi-channels'data to estimate one channel's data)
 
 R^2 here is an after-adjustment version: 
@@ -276,27 +276,27 @@ for i in range(w1_i.shape[0]):
 # prepare for estimate data
 # w1 part:-800~-400ms; w2 part:-400~0ms; s part:-200~1000ms
         
-# w1 estimate data: n_evetns, n_trials, n_points
+# w1 estimate data: n_evetns, n_trials, n_times
 w1_PO4_w1 = SPF.mlr_estimate(w1_i, RC_w1, RI_w1)
-# w1 PO4-only data: n_events, n_trials, n_points
+# w1 PO4-only data: n_events, n_trials, n_times
 w1_PO4_only_w1 = w1_i[:,:,4,:] - w1_PO4_w1
 
-# w2 estimate data(use w2): n_events, n_trials, n_points
+# w2 estimate data(use w2): n_events, n_trials, n_times
 w2_PO4_w2 = SPF.mlr_estimate(w2_i, RC_w2, RI_w2)
-# w2 estimate data(use w1): n_events, n_trials, n_points
+# w2 estimate data(use w1): n_events, n_trials, n_times
 w2_PO4_w1 = SPF.mlr_estimate(w2_i, RC_w1, RI_w1)
-# w2 PO4-only data(use w1): n_events, n_trials, n_points
+# w2 PO4-only data(use w1): n_events, n_trials, n_times
 w2_PO4_only_w1w2 = w2_i[:,:,4,:] - w2_PO4_w1
-# w2 PO4-only data(use w2): n_events, n_trials, n_points
+# w2 PO4-only data(use w2): n_events, n_trials, n_times
 w2_PO4_only_w2w2 = w2_i[:,:,4,:] - w2_PO4_w2
 
-# s estimate data(use w1): n_events, n_trials, n_points
+# s estimate data(use w1): n_events, n_trials, n_times
 s_PO4_w1 = SPF.mlr_estimate(signal_data[:,:,0:5,:], RC_w1, RI_w1)
-# s estimate data(use w2): n_events, n_trials, n_points
+# s estimate data(use w2): n_events, n_trials, n_times
 s_PO4_w2 = SPF.mlr_estimate(signal_data[:,:,0:5,:], RC_w2, RI_w2)
-# s PO4-only data(use w1): n_events, n_trials, n_points
+# s PO4-only data(use w1): n_events, n_trials, n_times
 s_PO4_only_w1 = signal_data[:,:,5,:] - s_PO4_w1
-# s PO4-only data(use w2): n_events, n_trials, n_points
+# s PO4-only data(use w2): n_events, n_trials, n_times
 s_PO4_only_w2 = signal_data[:,:,5,:] - s_PO4_w2
 
 #%% use SPSS to test the model

@@ -2,19 +2,24 @@
 """
 Created on Wed Oct 30 16:41:33 2019
 
-This module contains some useful functions to help processing eeg data
+This module contains some useful functions to help processing EEG data
 Continuously updating...
 
 2019-10-30:
     1. Multi-linear regression estimation
     2. SNR computing based on superimposed average method
-    3. Baseline correction based on zero mean
+    3. Baseline correction based on zero mean method
     
 2019-10-31:
     4. Time-frequency transform analysis using Morlet wavelet
     
 2019-11-3:
     5. Welch power spectrum analysis
+
+2019-11-：
+    6. Cosine similarity of two signal sequence
+    7. Residual analysis of estimate signal and original signal
+    8. 
 
 @author: Brynhildr
 """
@@ -24,17 +29,17 @@ import math
 import mne
 from mne.time_frequency import tfr_array_morlet, psd_array_welch
 
-#%%
+#%% MLR estimate
 def mlr_estimate(X, C, I):
     '''
-    use input data array to estimate one-channel data
-    :param X: 4D input array (n_events, n_trials, n_chans, n_times)
-    :param C: 3D coefficient array (n_chans, n_events, n_trials)
-    :param I: 2D intercept array (n_events, n_trials)
-    :param target: 3D signal data array (n_events, n_trials, n_times)
-    estimate equation: y = a + b1*x1 + b2*x2 + ... + bn*xn
-    use mat() to transform array to matrix to apply linear computation
-    use .A to transform matrix to array to apply normal functions
+    Use input data array to estimate one-channel data
+    :param X: 4D input array (n_events, n_epochs, n_chans, n_times)
+    :param C: 3D coefficient array (n_chans, n_events, n_epochs)
+    :param I: 2D intercept array (n_events, n_epochs)
+    :param target: 3D signal data array (n_events, n_epochs, n_times)
+    Estimate equation: y = a + b1*x1 + b2*x2 + ... + bn*xn
+    Use mat() to transform array to matrix to apply linear computation
+    Use .A to transform matrix to array to apply normal functions
     '''
     target = np.zeros((X.shape[0], X.shape[1], X.shape[3]))
     
@@ -45,15 +50,14 @@ def mlr_estimate(X, C, I):
             
     return target
 
-#%%
+#%% SNR computation
 def snr_sa(X):
     '''
-    in MLR condition
-    use superimposed average method to compute SNR
-    :param X: input 3D signal array (n_events, n_trials, n_times)
-    assume yi refers to an observation from a single experiment
-    assume E(y) refers to the mean of 50 trials' signal: E(y) = (y1+y2+...+yN)/N
-    and the random noise are considered to be decreased during the average process
+    Use superimposed average method to compute SNR in MLR condition
+    :param X: input 3D signal array (n_events, n_epochs, n_times)
+    Assume yi refers to an observation from a single experiment
+    Assume E(y) refers to the mean of signals: E(y) = (y1+y2+...+yN)/N
+        and the random noise are decreased during the average process
     So the SNR of pure SSVEP is computed like: SNR = sum((E(y))^2)/E(y^2)
     '''
     e_X = np.mean(X, axis=1)
@@ -74,12 +78,12 @@ def snr_sa(X):
             
     return snr
 
-#%%
+#%% baseline correction
 def zero_mean(X):
     '''
-    :param: input signal array, 4D (n_events, n_trials, n_chans, n_times)
-        or 3D(n_events, n_trials, n_times)
-    zero mean a signal sequence
+    :param: input signal array, 4D (n_events, n_epochs, n_chans, n_times)
+        or 3D(n_events, n_epochs, n_times)
+    Zero mean a signal sequence
     '''
     if X.ndim == 4:
         Y = np.zeros((X.shape[0],X.shape[1],X.shape[2],X.shape[3]))
@@ -95,26 +99,26 @@ def zero_mean(X):
                 Y[i,j,:]=X[i,j,:]-np.mean(X[i,j,:])            
     return Y
 
-#%%
+#%% time-frequency transform
 def tfr_analysis(X, sfreq, freqs, n_cycles, mode):
     '''
-    basic library is mne
-    use Morlet wavelet to do time-frequency transform
-    default choice: preload=True
-    :param X: input data array (n_events, n_trials, n_chans, n_times)
+    Basic library is mne
+    Use Morlet wavelet to do time-frequency transform
+    Default choice: preload=True
+    :param X: input data array (n_events, n_epochs, n_chans, n_times)
     :param sfreq: sampling frequency
     :param freqs: list, define the frequencies used in time-frequency transform
     :param n_cycles: number of cycles in the Morlet wavelet; 
                     fixed number or one per frequency
     :param mode: complex, power, phase, avg_power, itc, avg_power_itc
-        (1)complex: single trial complex (n_events, n_trials, n_chans, n_freqs, n_times)
-        (2)power: single trial power (n_events, n_trials, n_chans, n_freqs, n_times)
-        (3)phase: single trial phase (n_events, n_trials, n_chans, n_freqs, n_times)
+        (1)complex: single trial complex (n_events, n_epochs, n_chans, n_freqs, n_times)
+        (2)power: single trial power (n_events, n_epochs, n_chans, n_freqs, n_times)
+        (3)phase: single trial phase (n_events, n_epochs, n_chans, n_freqs, n_times)
         (4)avg_power: average of single trial power (n_events, n_chans, n_freqs, n_times)
         (5)itc: inter-trial coherence (n_events, n_chans, n_freqs, n_times)
         (6)avg_power_itc: average of singel trial power and inter-trial coherence
             across trials :avg_power+i*itc (n_events, n_chans, n_freqs, n_times)
-    expand data array in channel's dimension to fit tfr_array_morlet if necessary
+    Expand data array in channel's dimension to fit tfr_array_morlet if necessary
     '''
     if X.ndim < 4:
         data = np.zeros((X.shape[0], X.shape[1], 2, X.shape[2]))
@@ -165,12 +169,33 @@ def tfr_analysis(X, sfreq, freqs, n_cycles, mode):
                           freqs=freqs, n_cycles=n_cycles, output='avg_power_itc')
         return API
     
-#%%
+#%% power spectrum
 def welch_p(X):
     '''
-    use welch method to estimate signal power spectrum
-    
+    Use welch method to estimate signal power spectrum
+
+    :param X: input data array (n_events, n_epochs, n_times)
     '''
     
     
     return 
+
+#%% cosine similarity
+def cos_sim(origin, estimate):
+    '''
+    Compute one kind of cosine similarity of two signal sequence
+    sim(x,y) = xy / (||x|| * ||y||), x&y are multivariate vectors
+    :param origin: origin data array (n_events, n_epochs, n_times)
+    :param estimate: estimate data using MLR (n_events, n_epochs, n_times)
+    '''
+
+    return SIM
+
+def tanimoto_sim(origin, estimate):
+    '''
+    Compute another cosine similarity of two signal sequence
+    also called generalized Jaccard coefficient
+    sim(x,y) = xy / (x*x + y*y - x*y), x&y are multivariate vectors
+    '''
+
+    return SIM

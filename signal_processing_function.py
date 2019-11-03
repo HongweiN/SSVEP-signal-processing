@@ -14,41 +14,84 @@ Continuously updating...
     4. Time-frequency transform analysis using Morlet wavelet
     
 2019-11-3:
-    5. Welch power spectrum analysis
+    5. Welch power spectral density analysis
+    6. Multi-linear regression computation (combined with mlr_estimate)
 
 2019-11-：
-    6. Cosine similarity of two signal sequence
-    7. Residual analysis of estimate signal and original signal
-    8. 
+    7. Cosine similarity of two signal sequence
+    8. Residual analysis of estimate signal and original signal
+    9. 
 
 @author: Brynhildr
 """
-
+#%% import modules
 import numpy as np
 import math
 import mne
 from mne.time_frequency import tfr_array_morlet, psd_array_welch
+from sklearn.linear_model import LinearRegression
 
-#%% MLR estimate
-def mlr_estimate(X, C, I):
+#%% MLR analysis (computation & estimation)
+def mlr_analysis(X1, Y, X2, regression=True):
     '''
-    Use input data array to estimate one-channel data
-    :param X: 4D input array (n_events, n_epochs, n_chans, n_times)
-    :param C: 3D coefficient array (n_chans, n_events, n_epochs)
-    :param I: 2D intercept array (n_events, n_epochs)
+    Do multi-linear regression repeatedly and estimate one-channel signal
+    Model = LinearRegression().fit(X,Y): X(n_chans, n_times) & Y(n_chans, n_times)
+    :param X1: input model: 4D array (n_events, n_epochs, n_chans, n_times)
+    :param Y: output model: output model: 3D array (n_events, n_epochs, n_times)
+    :param X2: input signal: 4D array (n_events, n_epochs, n_chans, n_times)
     :param target: 3D signal data array (n_events, n_epochs, n_times)
-    Estimate equation: y = a + b1*x1 + b2*x2 + ... + bn*xn
-    Use mat() to transform array to matrix to apply linear computation
-    Use .A to transform matrix to array to apply normal functions
-    '''
-    target = np.zeros((X.shape[0], X.shape[1], X.shape[3]))
+
+    Part I:
+        Return R^2(after correction), coefficient, intercept
+        R^2 here is a corrected version: 
+            new R^2 = 1-(RSS/TSS)*((n-1)/(n-k-1)) = 1-(1-R^2)*((n-1)/(n-k-1))
+            (n: time points;   k: input channels' number)
+            which is a little less than original R^2 
+            and more accurate for MLR than LR(linear regression)
     
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):  # i for events, j for trials
-            target[i,j,:] = (np.mat(C[:,i,j].T)*np.mat(X[i,j,:,:])).A
-            target[i,j,:] += I[i,j]
-            
-    return target
+    Part II:
+        Estimate equation: y = a + b1*x1 + b2*x2 + ... + bn*xn
+        Use mat() to transform array to matrix to apply linear computation
+        Use .A to transform matrix to array to apply normal functions
+    
+    Expected to add in future: F-score, T-score, collinear diagnosis, ANOVA,
+        correlation, coefficient correlation, RSS analysis, 95% confidence interval
+    '''
+    # R^2 array: R2 (n_events, n_epochs)
+    R2 = np.zeros((X1.shape[0], X1.shape[1]))
+
+    # R^2 adjustment coefficient
+    correc_co = (X1.shape[3] - 1) / (X1.shape[3] - X1.shape[2] - 1)
+    
+    # regression coefficient array: RC (n_events, n_epochs, rc array)
+    RC = np.zeros((X1.shape[2], X1.shape[0], X1.shape[1]))
+    
+    # regression intercept array: RI (n_events, n_epochs): 
+    RI = np.zeros((X1.shape[0], X1.shape[1]))
+    
+    # estimate data array
+    Target = np.zeros((X2.shape[0], X2.shape[1], X2.shape[3]))
+
+    for i in range(X1.shape[0]):
+        for j in range(X1.shape[1]):  # i for events, j for epochs
+            # linear regression, remember to transform the array
+            L = LinearRegression().fit(X1[i,j,:,:].T, Y[i,j,:].T)
+            # the coefficient of derterminated R^2 of the prediction
+            R2[i,j] = 1 - (1 - L.score(X1[i,j,:,:].T, Y[i,j,:])) * correc_co
+            # the intercept of the model
+            RI[i,j] = L.intercept_
+            # the regression coefficient of the model
+            RC[:,i,j] = L.coef_
+
+    for i in range(X2.shape[0]):
+        for j in range(X2.shape[1]):
+            Target[i,j,:] = (np.mat(RC[:,i,j].T) * np.mat(X2[i,j,:,:])).A
+            Target[i,j,:] += RI[i,j]
+    
+    if regression == True:
+        return R2, Target
+    elif regression == False:
+        return Target
 
 #%% SNR computation
 def snr_sa(X):
@@ -169,16 +212,30 @@ def tfr_analysis(X, sfreq, freqs, n_cycles, mode):
                           freqs=freqs, n_cycles=n_cycles, output='avg_power_itc')
         return API
     
-#%% power spectrum
-def welch_p(X):
+#%% power spectral density
+def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     '''
-    Use welch method to estimate signal power spectrum
-
+    Use welch method to estimate signal power spectral density
+    Basic function is mne.psd_array_welch
     :param X: input data array (n_events, n_epochs, n_times)
+    :param sfreq: the sampling frequency
+    :param fmin, fmax: the lower(upper) frequency of interest
+    :param n_fft: the length of FFT used, must be >= n_per_seg
+    :param n_overlap: the number of points of overlap between segments
+    :param n_per_seg: length of each welch segment, usually = n_fft
+    :param psds: power spectral density array (n_events, n_epochs, n_freqs)
+    :param freqs: frequencies used in psd analysis
     '''
+    num_freqs = (np.arrange(n_fft//2+1, dtype=float)*(sfreq/n_fft)).shape[0]
+    psds = np.zeros((X.shape[0], X.shape[1], num_freqs))
+    freqs = np.zeros((X.shape[0], X.shape[1], num_freqs))
     
-    
-    return 
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            psd[i,j,:], freqs[i,j,:] = psd_array_welch(X[i,j,:], sfreq=sfreq, fmin=fmin,
+                    fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_sag=n_per_sag)
+
+    return psds, freqs
 
 #%% cosine similarity
 def cos_sim(origin, estimate):

@@ -218,82 +218,28 @@ fig.subplots_adjust(left=0.08, bottom=0.070, right=0.950, top=0.950, hspace=0.5,
 plt.savefig(r'E:\Documents\医学工程与转化医学研究院\研究生课题\program\origin_data.png', dpi=600)
 plt.show()
 
-#%% linear regression analysis
-'''
-do MLR(multi linear regression) repeatedly and return R^2 and coefficients array
-
-model = LinearRegression().fit(X,y): X(n_times, n_inputs) & y(n_times, n_outpus)
-
-input model: 4D array (n_events, n_trials, n_channels, n_times)
-output model: 3D array (n_events, n_trials, n_times)
-(default: use multi-channels'data to estimate one channel's data)
-
-R^2 here is an after-adjustment version: 
-    new R^2 = 1-(RSS/TSS)*((n-1)/(n-k-1)) = 1-(1-R^2)*((n-1)/(n-k-1))
-    (n: time points;   k: input channels' number)
-    which is a little less than origianl R^2 
-    and more accurate for MLR than LR(linear regression)
-    
-expected to add in future: F-score, T-score, collinear diagnosis, ANOVA, 
-    correlation, coefficient correlation, RSS analysis, 95% confidence interval
-'''
-# R^2 array: R2(n_events, n_trials)
-R2_w1 = np.zeros((w1_i.shape[0], w1_i.shape[1]))
-R2_w2 = np.zeros((w2_i.shape[0], w2_i.shape[1]))
-
-# R^2 adjustment coefficient
-ad_co1 = (w1_i.shape[3] - 1)/(w1_i.shape[3] - w1_i.shape[2] - 1)
-ad_co2 = (w2_i.shape[3] - 1)/(w2_i.shape[3] - w2_i.shape[2] - 1)
-
-# regression coefficient array: RC(n_events, n_trials, rc array)
-RC_w1 = np.zeros((w1_i.shape[2], w1_i.shape[0], w1_i.shape[1]))
-RC_w2 = np.zeros((w2_i.shape[2], w2_i.shape[0], w2_i.shape[1]))
-
-# regression intercept array: RI(n_events, n_trials): 
-RI_w1 = np.zeros((w1_i.shape[0], w1_i.shape[1]))
-RI_w2 = np.zeros((w2_i.shape[0], w2_i.shape[1]))
-
-for i in range(w1_i.shape[0]):
-    for j in range(w1_i.shape[1]):  # i for events, j for trials
-        # linear regression, remember to transform the array
-        L1 = LinearRegression().fit(w1_i[i,j,:,:].T, w1_o[i,j,:].T)
-        L2 = LinearRegression().fit(w2_i[i,j,:,:].T, w2_o[i,j,:].T)
-    
-        # the coefficient of determination R^2 of the prediction 
-        R2_w1[i,j] = 1 - (1 - L1.score(w1_i[i,j,:,:].T, w1_o[i,j,:].T))*ad_co1
-        R2_w2[i,j] = 1 - (1 - L2.score(w2_i[i,j,:,:].T, w2_o[i,j,:].T))*ad_co2
-        
-        # the intercept of the model
-        RI_w1[i,j] = L1.intercept_
-        RI_w2[i,j] = L2.intercept_
-        
-        # the regression coefficient of the model
-        RC_w1[:,i,j] = L1.coef_
-        RC_w2[:,i,j] = L2.coef_
-        
-#%% use input data to estimate target-channel-only data
-
-# prepare for estimate data
+#%% linear regression analysis and target channel data estimation
 # w1 part:-800~-400ms; w2 part:-400~0ms; s part:-200~1000ms
-        
-# w1 estimate data: n_evetns, n_trials, n_times
-w1_PO4_w1 = SPF.mlr_estimate(w1_i, RC_w1, RI_w1)
+# R^2 & w1 estimate data: n_evetns, n_trials, n_times
+R2_w1, w1_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w1_i)
 # w1 PO4-only data: n_events, n_trials, n_times
 w1_PO4_only_w1 = w1_i[:,:,4,:] - w1_PO4_w1
 
-# w2 estimate data(use w2): n_events, n_trials, n_times
-w2_PO4_w2 = SPF.mlr_estimate(w2_i, RC_w2, RI_w2)
-# w2 estimate data(use w1): n_events, n_trials, n_times
-w2_PO4_w1 = SPF.mlr_estimate(w2_i, RC_w1, RI_w1)
+# R^2 & w2 estimate data(use w2): n_events, n_trials, n_times
+R2_w2, w2_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i)
+# R^2 & w2 estimate data(use w1): n_events, n_trials, n_times
+R2_w1, w1_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w2_i)
 # w2 PO4-only data(use w1): n_events, n_trials, n_times
 w2_PO4_only_w1w2 = w2_i[:,:,4,:] - w2_PO4_w1
 # w2 PO4-only data(use w2): n_events, n_trials, n_times
 w2_PO4_only_w2w2 = w2_i[:,:,4,:] - w2_PO4_w2
 
 # s estimate data(use w1): n_events, n_trials, n_times
-s_PO4_w1 = SPF.mlr_estimate(signal_data[:,:,0:5,:], RC_w1, RI_w1)
+s_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, signal_data[:,:,0:5,:],
+                    regression=False)
 # s estimate data(use w2): n_events, n_trials, n_times
-s_PO4_w2 = SPF.mlr_estimate(signal_data[:,:,0:5,:], RC_w2, RI_w2)
+s_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, signal_data[:,:,0:5,:],
+                    regression=False)               
 # s PO4-only data(use w1): n_events, n_trials, n_times
 s_PO4_only_w1 = signal_data[:,:,5,:] - s_PO4_w1
 # s PO4-only data(use w2): n_events, n_trials, n_times
@@ -468,18 +414,38 @@ use w1 model to estimate w1 part's data, then compute the fitting deviation
 use w1 model to estimate w2 part's data, and do so
 use w2 model to estimate w2 part's data, and do so
 '''
-#%% power spectrum estimation
+#%% power spectral density estimation
 '''
-using welch method, target is PO4-only data array
+Use welch method to compute PSD, target is PO4-only data array
 '''
+# algorithm initialization
+sfreq = 1000
+fmin, fmax = 0, 50. 
+n_fft = 2048
+n_overlap, n_per_seg = 300, 600
+
+# psd computation
+s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,
+                fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+s_w1_psds, s_w1_freqs = SPF.welch_p(s_PO4_w1, sfreq=sfreq, fmin=fmin,
+                fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+s_w2_psds, s_w2_freqs = SPF.welch_p(s_PO4_w2, sfreq=sfreq, fmin=fmin,
+                fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
+                fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
+                fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
 
+plt.savefig()
+plt.show()
 
 #%% time-frequency transform
 '''
-using morlet wavelet method, n_cyles varies for each frequency condition
+Use morlet wavelet method to compute TFR
+Inside params n_cyles varies for each frequency condition
 '''
-# frequency initialization
+# frequency initialization for tfr
 freqs = np.arange(1., 30, 0.05)
 n_cycles = freqs/2.
 times = 

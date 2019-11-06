@@ -103,21 +103,21 @@ def snr_sa(X):
         and the random noise are decreased during the average process
     So the SNR of pure SSVEP is computed like: SNR = sum((E(y))^2)/E(y^2)
     '''
-    e_X = np.mean(X, axis=1)
-    p_op_X = np.zeros((X.shape[0]))
-    p_on_X = np.zeros((X.shape[0], X.shape[1]))
+    e_X = np.mean(X, axis=2)
+    p_s_X = np.zeros((X.shape[0]))
+    p_sn_X = np.zeros((X.shape[0], X.shape[1]))
     
     for i in range(X.shape[0]):
-        p_op_X[i] = np.sum(e_X[i,:]**2)
+        p_s_X[i] = (np.mean(e_X[i,:]))**2
         
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
-            p_on_X[i,j] = (np.sum(X[i,j,:]**2))
+            p_sn_X[i,j] = np.mean(e_X[i,:]**2)
     
     snr = np.zeros((X.shape[0]))
-    p_on_X = np.mean(p_on_X, axis=1)
     for i in range(X.shape[0]):
-        snr[i] = 10 * math.log((p_op_X[i]/p_on_X[i]), 10)
+        for j in range(X.shape[1]):
+            snr[i,j] = 10 * math.log((p_s_X[i]/(p_sn_X[i,j]-p_s_X[i])), 10)
             
     return snr
 

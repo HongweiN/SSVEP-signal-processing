@@ -52,7 +52,7 @@ raw = concatenate_raws(raw_cnts)
 del raw_cnts
 
 #%% prepare for data extraction
-raw.filter(l_freq=0.5, h_freq=40., method='fir', phase='zero',
+raw.filter(l_freq=5, h_freq=40., method='fir', phase='zero',
            fir_window='hamming', fir_design='firwin', skip_by_annotation='edge')
 events = mne.find_events(raw, output='onset')
 
@@ -422,7 +422,7 @@ Use welch method to compute PSD, target is PO4-only data array
 sfreq = 1000
 fmin, fmax = 0, 50. 
 n_fft = 2048
-n_overlap, n_per_seg = 300, 600
+n_overlap, n_per_seg = 0, 900
 
 # psd computation
 s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,
@@ -435,7 +435,8 @@ s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-
+plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
+plt.plot(s_o_freqs[26,26,:],s_o_psds[26,26,:])
 
 #plt.savefig()
 #plt.show()

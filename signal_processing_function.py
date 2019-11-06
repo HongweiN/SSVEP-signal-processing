@@ -233,7 +233,7 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
             psd[i,j,:], freqs[i,j,:] = psd_array_welch(X[i,j,:], sfreq=sfreq, fmin=fmin,
-                    fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_sag=n_per_sag)
+                    fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
     return psds, freqs
 

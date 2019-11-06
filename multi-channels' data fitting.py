@@ -437,8 +437,8 @@ s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
 
-plt.savefig()
-plt.show()
+#plt.savefig()
+#plt.show()
 
 #%% time-frequency transform
 '''

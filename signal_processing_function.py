@@ -114,7 +114,7 @@ def snr_sa(X):
         for j in range(X.shape[1]):
             p_sn_X[i,j] = e_X[i,j]**2
     
-    snr = np.zeros((X.shape[0]), X.shape[1])
+    snr = np.zeros((X.shape[0], X.shape[1]))
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
             snr[i,j] = 10 * math.log((p_s_X[i]/(p_sn_X[i,j]-p_s_X[i])), 10)

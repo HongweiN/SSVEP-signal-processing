@@ -5,7 +5,7 @@ Created on Tue Oct 22 16:03:11 2019
 
 @author: Brynhildr
 """
-#%%
+#%% import third part module
 import numpy as np
 import scipy.io as io
 import pandas as pd
@@ -13,7 +13,7 @@ import os
 import mne
 import matplotlib
 import seaborn as sns
-import signal_processing_function as SPF
+import signal_processing_function as SPF 
 from mne.io import concatenate_raws
 from mne import Epochs, pick_types, find_events
 import matplotlib.pyplot as plt
@@ -220,7 +220,7 @@ plt.show()
 
 #%% linear regression analysis and target channel data estimation
 # w1 part:-800~-400ms; w2 part:-400~0ms; s part:-200~1000ms
-# R^2 & w1 estimate data: n_evetns, n_trials, n_times
+# R^2 & w1 estimate data: n_events, n_trials, n_times
 R2_w1, w1_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w1_i)
 # w1 PO4-only data: n_events, n_trials, n_times
 w1_PO4_only_w1 = w1_i[:,:,4,:] - w1_PO4_w1
@@ -228,7 +228,7 @@ w1_PO4_only_w1 = w1_i[:,:,4,:] - w1_PO4_w1
 # R^2 & w2 estimate data(use w2): n_events, n_trials, n_times
 R2_w2, w2_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i)
 # R^2 & w2 estimate data(use w1): n_events, n_trials, n_times
-R2_w1, w1_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w2_i)
+R2_w1, w2_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w2_i)
 # w2 PO4-only data(use w1): n_events, n_trials, n_times
 w2_PO4_only_w1w2 = w2_i[:,:,4,:] - w2_PO4_w1
 # w2 PO4-only data(use w2): n_events, n_trials, n_times

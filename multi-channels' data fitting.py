@@ -52,7 +52,7 @@ raw = concatenate_raws(raw_cnts)
 del raw_cnts
 
 #%% prepare for data extraction
-raw.filter(l_freq=0.5, h_freq=20., method='fir', phase='zero',
+raw.filter(l_freq=0.5, h_freq=40., method='fir', phase='zero',
            fir_window='hamming', fir_design='firwin', skip_by_annotation='edge')
 events = mne.find_events(raw, output='onset')
 

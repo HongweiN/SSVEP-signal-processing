@@ -150,7 +150,7 @@ def snr_freq(X):
                 if k==(X.shape[2]-1):
                     snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-2:])+2*X[i,j,k]))
                 if k==(X.shape[2]-2):
-                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-2:])+*X[i,j,k+1]))
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-2:])+X[i,j,k+1]))
                 else:
                     snr[i,j,k] = 20 * math.log10(X[i,j,k]/np.sum(X[i,j,k-2:k+3]))
     

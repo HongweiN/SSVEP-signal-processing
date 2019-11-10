@@ -281,6 +281,10 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
 #%% Frequency spectrum
 def precise_fft(X, ):
     '''
+    Compute & plot frequency spectrum of signal
+    :param X: input signal data array (n_events, n_epochs, n_times)
+    :param n_fft: fft points
+    6
     '''
 
 #%% cosine similarity

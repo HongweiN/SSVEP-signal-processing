@@ -49,7 +49,7 @@ for file in filelist:
 
 raw = concatenate_raws(raw_cnts)
 
-del raw_cnts
+del raw_cnts, raw_cnt
 
 #%% prepare for data extraction
 raw.filter(l_freq=5, h_freq=40., method='fir', phase='zero',
@@ -103,7 +103,7 @@ model_data *= 1e6             # reset the units
 model_w1 = model_data[:,:,:,:400]
 model_w2 = model_data[:,:,:,400:]
 
-#del model_data  # release RAM
+del model_data  # release RAM
 
 #%% get data for model comparision
 tmin_s, tmax_s = -0.2, 1    # time range for model comparision (signal data)
@@ -123,6 +123,7 @@ for i in range(ne):
     
 signal_data *= 1e6
 # O1, O2, OZ, POZ, PO3, PO4
+del raw
 
 #%% flatten model data into 2-D array to do LRA in SPSS
 ttp_w1 = model_w1.shape[3] * ne * tfoc
@@ -161,7 +162,7 @@ w1_o = model_w1[:,:,5,:]    # output channel: PO4
 w2_i = model_w2[:,:,0:5,:]  # input channels: O1,O2,OZ,POZ,PO3
 w2_o = model_w2[:,:,5,:]    # output channel: PO4
 
-#del model_w1, model_w2  # release RAM
+del model_w1, model_w2  # release RAM
 
 #%% plot origin data(background and signal)
 fig = plt.figure(figsize=(18,16))
@@ -406,11 +407,6 @@ SNR_o = SPF.snr_sa(signal_data[:,:,5,:])
 SNR_w1 = SPF.snr_sa(s_PO4_only_w1)
 SNR_w2 = SPF.snr_sa(s_PO4_only_w2)
 
-#%% extract signal's SNR comparison (in frequency domain)
-SNR_o_freq = SPF.snr_freq()
-SNR_w1_freq = SPF.snr_freq()
-SNR_w2_freq = SPF.snr_freq()
-
 #%% linear regression model time variation analysis
 '''
 use w1 model to estimate w1 part's data, then compute the fitting deviation
@@ -425,8 +421,8 @@ Use welch method to compute PSD, target is PO4-only data array
 sfreq = 1000
 fmin, fmax = 0, 50. 
 n_fft = 2048
-n_overlap = 0
-n_per_seg = n_fft
+n_overlap = 300
+n_per_seg = 600
 
 # psd computation
 s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,
@@ -440,11 +436,22 @@ s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
 s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
-plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
-plt.plot(s_o_freqs[26,26,:],s_o_psds[26,26,:])
+#plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
+#plt.plot(s_o_freqs[26,26,:],s_o_psds[26,26,:])
 
 #plt.savefig()
 #plt.show()
+
+#%% extract signal's SNR comparison (in frequency domain)
+def snr_F(X, K):
+    snr = np.zeros((X.shape[0]))
+    for i in range(X.shape[0]):
+            snr[i] = K*((X[i,31]+X[i,32])/2)/(np.sum(X[i,:])-0.5*(X[i,31]+X[i,32]))
+    return snr
+
+SNR_o_freq = 20*np.log10(snr_F(np.mean(s_o_psds, axis=1), 204))
+SNR_w1_freq = 20*np.log10(snr_F(np.mean(s_w1_psds, axis=1), 204))
+SNR_w2_freq = 20*np.log10(snr_F(np.mean(s_w2_psds, axis=1), 204))
 
 #%% time-frequency transform
 '''

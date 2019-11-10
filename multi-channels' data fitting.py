@@ -26,7 +26,7 @@ from sklearn.linear_model import LinearRegression
 #%% load data
 filepath = r'E:\Documents\SSVEP瞬态特性的研究\data'
 
-subjectlist = ['mengqiangfan']
+subjectlist = ['wangruiyan']
 
 filefolders = []
 for subindex in subjectlist:
@@ -421,19 +421,19 @@ Use welch method to compute PSD, target is PO4-only data array
 sfreq = 1000
 fmin, fmax = 0, 50. 
 n_fft = 2048
-n_overlap = 300
-n_per_seg = 600
+n_overlap = 0
+n_per_seg = 2048
 
 # psd computation
-s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,
+s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,200:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_w1_psds, s_w1_freqs = SPF.welch_p(s_PO4_w1, sfreq=sfreq, fmin=fmin,
+s_w1_psds, s_w1_freqs = SPF.welch_p(s_PO4_w1[:,:,200:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_w2_psds, s_w2_freqs = SPF.welch_p(s_PO4_w2, sfreq=sfreq, fmin=fmin,
+s_w2_psds, s_w2_freqs = SPF.welch_p(s_PO4_w2[:,:,200:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
+s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1[:,:,200:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
+s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2[:,:,200:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
 #plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
@@ -443,17 +443,67 @@ s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
 #plt.show()
 
 #%% extract signal's SNR comparison (in frequency domain)
-def snr_F(X, K):
+def snr_F(X):
     snr = np.zeros((X.shape[0]))
+    K = 102
     for i in range(X.shape[0]):
-        snr[i] = K*((X[i,31]+X[i,32]+X[i,30])/3)/(np.sum(X[i,:])-(X[i,31]+X[i,32]+X[i,30])/3)
+        target = (X[i,30] + X[i,31] + X[i,32]) / 3
+        snr[i] = K * (target / (np.sum(X[i,:]) - target))
     return snr
 
-SNR_o_freq = 20*np.log10(snr_F(s_o_psds[26,:,:]), 204)
-SNR_w1_freq = 20*np.log10(snr_F(s_w1_psds[26,:,:]), 204)
-SNR_w2_freq = 20*np.log10(snr_F(s_w2_psds[26,:,:]), 204)
+#%%
+SNR_o_freq = 20*np.log10(snr_F(s_o_psds[26,:,:]))
+SNR_w1_freq = 20*np.log10(snr_F(s_e_w1_psds[26,:,:]))
+SNR_w2_freq = 20*np.log10(snr_F(s_e_w2_psds[26,:,:]))
 
+plt.plot((SNR_w1_freq-SNR_o_freq), label='w1 model')
+plt.plot((SNR_w2_freq-SNR_o_freq), label='w2 model')
+plt.legend(loc='best')
+plt.show()
 
+#%%
+fig, axes = plt.subplots(2, 2, figsize=(20,15))
+
+axes[0,0].set_xlabel('Frequency/Hz', fontsize=16)
+axes[0,0].set_ylabel('Power', fontsize=16)
+axes[0,0].tick_params(axis='both', labelsize=16)
+axes[0,0].set_title('Power Spectrum Density(15Hz)', fontsize=20)
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_o_psds[26,:,:], axis=0),
+    color='red', linewidth=1.5, label='Origin')
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w1_psds[26,:,:], axis=0),
+    color='coral', linewidth=1.5, label='w1 Estimation')
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w2_psds[26,:,:], axis=0),
+    color='dodgerblue', linewidth=1.5, label='w2 Estimation')
+axes[0,0].legend(loc='best', fontsize=20)
+
+axes[0,1].set_xlabel('Frequency/Hz', fontsize=16)
+axes[0,1].set_ylabel('Power', fontsize=16)
+axes[0,1].tick_params(axis='both', labelsize=16)
+axes[0,1].set_title('Power Spectrum Density(15Hz)', fontsize=20)
+axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w1_psds[26,:,:], axis=0),
+    color='coral', linewidth=1.5, label='w1 Extraction')
+axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w2_psds[26,:,:], axis=0),
+    color='dodgerblue', linewidth=1.5, label='w2 Extraction')
+axes[0,1].legend(loc='best', fontsize=20)
+
+axes[1,0].set_xlabel('Trials', fontsize=16)
+axes[1,0].set_ylabel('SNR/dB', fontsize=16)
+axes[1,0].tick_params(axis='both', labelsize=16)
+axes[1,0].set_title('Promotion of SNR', fontsize=20)
+axes[1,0].plot(SNR_w1_freq-SNR_o_freq, color='seagreen', linewidth=1.5, label='w1-Origin')
+axes[1,0].plot(SNR_w2_freq-SNR_o_freq, color='goldenrod', linewidth=1.5, label='w2-Origin')
+axes[1,0].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=2)
+axes[1,0].legend(loc='best', fontsize=20)
+
+axes[1,1].set_xlabel('Trials', fontsize=16)
+axes[1,1].set_ylabel('SNR/dB', fontsize=16)
+axes[1,1].tick_params(axis='both', labelsize=16)
+axes[1,1].set_title('Comparison of Models', fontsize=20)
+axes[1,1].plot(SNR_w2_freq-SNR_w1_freq, linewidth=1.5, label='w2-w1')
+axes[1,1].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=2)
+axes[1,1].legend(loc='best', fontsize=20)
+
+plt.show()
 
 #%% time-frequency transform
 '''

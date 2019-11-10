@@ -396,7 +396,7 @@ zm_signal_data = SPF.zero_mean(signal_data)
 zm_s_po4_only_w1 = SPF.zero_mean(s_PO4_only_w1)
 zm_s_po4_only_w2 = SPF.zero_mean(s_PO4_only_w2)
 
-#%% extract signal's SNR comparison
+#%% extract signal's SNR comparison (using superimposed average method)
 '''
 compare the SNR of original SSVEP signal and the target-only-channel's data
 now we're going to compute the SNR of 50 trials' data of 27 stimuli conditions
@@ -405,6 +405,11 @@ compare the w1 & w2 model
 SNR_o = SPF.snr_sa(signal_data[:,:,5,:])
 SNR_w1 = SPF.snr_sa(s_PO4_only_w1)
 SNR_w2 = SPF.snr_sa(s_PO4_only_w2)
+
+#%% extract signal's SNR comparison (in frequency domain)
+SNR_o_freq = SPF.snr_freq()
+SNR_w1_freq = SPF.snr_freq()
+SNR_w2_freq = SPF.snr_freq()
 
 #%% linear regression model time variation analysis
 '''
@@ -420,7 +425,8 @@ Use welch method to compute PSD, target is PO4-only data array
 sfreq = 1000
 fmin, fmax = 0, 50. 
 n_fft = 2048
-n_overlap, n_per_seg = 0, 900
+n_overlap = 0
+n_per_seg = n_fft
 
 # psd computation
 s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,

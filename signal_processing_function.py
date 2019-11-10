@@ -36,7 +36,7 @@ import math
 import mne
 from mne.time_frequency import tfr_array_morlet, psd_array_welch, stft
 from sklearn.linear_model import LinearRegression
-from numpy import signal
+from scipy import signal
 
 #%% MLR analysis (computation & estimation)
 def mlr_analysis(X1, Y, X2, regression=True):

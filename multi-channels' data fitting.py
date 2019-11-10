@@ -26,7 +26,7 @@ from sklearn.linear_model import LinearRegression
 #%% load data
 filepath = r'E:\Documents\SSVEP瞬态特性的研究\data'
 
-subjectlist = ['wangruiyan']
+subjectlist = ['mengqiangfan']
 
 filefolders = []
 for subindex in subjectlist:
@@ -446,12 +446,14 @@ s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
 def snr_F(X, K):
     snr = np.zeros((X.shape[0]))
     for i in range(X.shape[0]):
-            snr[i] = K*((X[i,31]+X[i,32])/2)/(np.sum(X[i,:])-0.5*(X[i,31]+X[i,32]))
+        snr[i] = K*((X[i,31]+X[i,32]+X[i,30])/3)/(np.sum(X[i,:])-(X[i,31]+X[i,32]+X[i,30])/3)
     return snr
 
-SNR_o_freq = 20*np.log10(snr_F(np.mean(s_o_psds, axis=1), 204))
-SNR_w1_freq = 20*np.log10(snr_F(np.mean(s_w1_psds, axis=1), 204))
-SNR_w2_freq = 20*np.log10(snr_F(np.mean(s_w2_psds, axis=1), 204))
+SNR_o_freq = 20*np.log10(snr_F(s_o_psds[26,:,:]), 204)
+SNR_w1_freq = 20*np.log10(snr_F(s_w1_psds[26,:,:]), 204)
+SNR_w2_freq = 20*np.log10(snr_F(s_w2_psds[26,:,:]), 204)
+
+
 
 #%% time-frequency transform
 '''

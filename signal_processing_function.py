@@ -15,12 +15,18 @@ Continuously updating...
     
 2019-11-3:
     5. Welch power spectral density analysis
-    6. Multi-linear regression computation (combined with mlr_estimate)
+    6. Multi-linear regression computation (combined with No.1)
 
-2019-11-：
-    7. Cosine similarity of two signal sequence
-    8. Residual analysis of estimate signal and original signal
-    9. 
+2019-11-10:
+    7. Time-frequency transform using STFT (combined with No.4)
+    8. Precise FFT transform
+    9. SNR of SSVEP signal (in frequency domain) (combined with No.2)
+    10. Find spectrum peaks (combined with No.9)
+
+2019-11-:
+    11. Cosine similarity of two signal sequence
+    12. Residual analysis of estimate signal and original signal
+    13. 
 
 @author: Brynhildr
 """
@@ -28,8 +34,9 @@ Continuously updating...
 import numpy as np
 import math
 import mne
-from mne.time_frequency import tfr_array_morlet, psd_array_welch
+from mne.time_frequency import tfr_array_morlet, psd_array_welch, stft
 from sklearn.linear_model import LinearRegression
+from numpy import signal
 
 #%% MLR analysis (computation & estimation)
 def mlr_analysis(X1, Y, X2, regression=True):
@@ -121,6 +128,34 @@ def snr_sa(X):
             
     return snr
 
+def snr_freq(X):
+    '''
+    Compute SNR of SSVEP in frequency domain
+    Define SNR of each frequency point as the sum of power of its
+        surrounding points in 1Hz's range, which is :
+            SNR(freq) = Power(freq)/sum(Power((freq-1):(freq+1)))
+    For 1st, 2nd, last and penultimate point, make estimations according to
+        edge rules, which consider not-included points are equal to the edge values
+    :param X: input spectrum data array (n_events, n_epochs, n_times)
+    '''
+    snr = np.zeros((X.shape[0], X.shape[1], X.shape[2]))
+
+    for i in range(X.shape[0]):         # i for events
+        for j in range(X.shape[1]):     # j for epochs
+            for k in range(X.shape[2]):
+                if k==0:
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k:k+3])+2*X[i,j,k]))
+                if k==1:
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-1:k+3])+X[i,j,k-1]))
+                if k==(X.shape[2]-1):
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-2:])+2*X[i,j,k]))
+                if k==(X.shape[2]-2):
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/(np.sum(X[i,j,k-2:])+*X[i,j,k+1]))
+                else:
+                    snr[i,j,k] = 20 * math.log10(X[i,j,k]/np.sum(X[i,j,k-2:k+3]))
+    
+    return snr
+
 #%% baseline correction
 def zero_mean(X):
     '''
@@ -143,7 +178,7 @@ def zero_mean(X):
     return Y
 
 #%% time-frequency transform
-def tfr_analysis(X, sfreq, freqs, n_cycles, mode):
+def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
     '''
     Basic library is mne
     Use Morlet wavelet to do time-frequency transform
@@ -212,6 +247,12 @@ def tfr_analysis(X, sfreq, freqs, n_cycles, mode):
                           freqs=freqs, n_cycles=n_cycles, output='avg_power_itc')
         return API
     
+def tfr_stft(X, sfreq, freqs):
+    '''
+    Basic library is mne
+    Use STFT(short-time fourier transform) to do time-frequency transform
+    '''
+
 #%% power spectral density
 def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     '''
@@ -236,6 +277,11 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
                     fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
     return psds, freqs
+
+#%% Frequency spectrum
+def precise_fft(X, ):
+    '''
+    '''
 
 #%% cosine similarity
 def cos_sim(origin, estimate):

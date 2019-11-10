@@ -235,11 +235,9 @@ w2_PO4_only_w1w2 = w2_i[:,:,4,:] - w2_PO4_w1
 w2_PO4_only_w2w2 = w2_i[:,:,4,:] - w2_PO4_w2
 
 # s estimate data(use w1): n_events, n_trials, n_times
-s_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, signal_data[:,:,0:5,:],
-                    regression=False)
+s_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, signal_data[:,:,0:5,:], regression=False)
 # s estimate data(use w2): n_events, n_trials, n_times
-s_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, signal_data[:,:,0:5,:],
-                    regression=False)               
+s_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, signal_data[:,:,0:5,:], regression=False)               
 # s PO4-only data(use w1): n_events, n_trials, n_times
 s_PO4_only_w1 = signal_data[:,:,5,:] - s_PO4_w1
 # s PO4-only data(use w2): n_events, n_trials, n_times
@@ -435,6 +433,7 @@ s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+
 plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
 plt.plot(s_o_freqs[26,26,:],s_o_psds[26,26,:])
 
@@ -449,7 +448,7 @@ Inside params n_cyles varies for each frequency condition
 # frequency initialization for tfr
 freqs = np.arange(1., 30, 0.05)
 n_cycles = freqs/2.
-times = 
+times = np.linspace(-200, 1000, 1200)
 
 # power of extract PO4 data using w1 model (return expansion, correct manually)
 pew1_po4 = SPF.tfr_analysis(s_PO4_only_w1)

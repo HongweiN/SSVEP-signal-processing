@@ -106,7 +106,7 @@ model_w2 = model_data[:,:,:,400:]
 del model_data  # release RAM
 
 #%% get data for model comparision
-tmin_s, tmax_s = -0.2, 1    # time range for model comparision (signal data)
+tmin_s, tmax_s = -0.8, 1    # time range for model comparision (signal data)
 baseline = (-0.2, 0)        # define baseline  
 
 # prepare for high-dimension signal data                     
@@ -174,49 +174,49 @@ x3 = [i for i in range(-200, 1001, 1)]
 gs = GridSpec(3, 2, figure=fig)
 
 ax1 = fig.add_subplot(gs[:2, :])
-ax1.set_title('Original Signal Data', fontsize=28)
-ax1.set_xlabel('Time/ms', fontsize=24)
-ax1.set_ylabel('Amplitude/μV', fontsize=24)
-ax1.plot(x3, np.mean(signal_data[26,:,0,:], axis=0), label='O1', linewidth=1)
-ax1.plot(x3, np.mean(signal_data[26,:,1,:], axis=0), label='O2', linewidth=1)
-ax1.plot(x3, np.mean(signal_data[26,:,2,:], axis=0), label='OZ', linewidth=1)
-ax1.plot(x3, np.mean(signal_data[26,:,3,:], axis=0), label='POZ', linewidth=1)
-ax1.plot(x3, np.mean(signal_data[26,:,4,:], axis=0), label='PO3', linewidth=1)
-ax1.plot(x3, np.mean(signal_data[26,:,5,:], axis=0), label='PO4', linewidth=3)
-ax1.vlines(8.3, -15, 20, colors='black', linestyles='dashed',
-           label='start point', linewidth=2)
+ax1.set_title(r'$\ Original\ Signal\ Data$', fontsize=28)
+ax1.set_xlabel(r'$\ Time/ms$', fontsize=24)
+ax1.set_ylabel(r'$\ Amplitude/μV$', fontsize=24)
+ax1.plot(x3, np.mean(signal_data[23,:,0,:], axis=0), label=r'$\ O1$', linewidth=1)
+ax1.plot(x3, np.mean(signal_data[23,:,1,:], axis=0), label=r'$\ O2$', linewidth=1)
+ax1.plot(x3, np.mean(signal_data[23,:,2,:], axis=0), label=r'$\ OZ$', linewidth=1)
+ax1.plot(x3, np.mean(signal_data[23,:,3,:], axis=0), label=r'$\ POZ$', linewidth=1)
+ax1.plot(x3, np.mean(signal_data[23,:,4,:], axis=0), label=r'$\ PO3$', linewidth=1)
+ax1.plot(x3, np.mean(signal_data[23,:,5,:], axis=0), label=r'$\ PO4$', linewidth=3)
+ax1.vlines(8.3, -20, 20, colors='black', linestyles='dashed',
+           label=r'$\ start\ point$', linewidth=2)
 ax1.tick_params(axis='both', labelsize=18)
 ax1.legend(loc='upper right', fontsize=18)
 
 ax2 = fig.add_subplot(gs[2, 0])
-ax2.set_title('Part I Background Data', fontsize=28)
-ax2.set_xlabel('Time/ms', fontsize=24)
-ax2.set_ylabel('Amplitude/μV', fontsize=24)
-ax2.plot(x1, w1_i[6,15,0,:], label='O1', linewidth=1)
-ax2.plot(x1, w1_i[6,15,1,:], label='O2', linewidth=1)
-ax2.plot(x1, w1_i[6,15,2,:], label='OZ', linewidth=1)
-ax2.plot(x1, w1_i[6,15,3,:], label='POZ', linewidth=1)
-ax2.plot(x1, w1_i[6,15,4,:], label='PO3', linewidth=1)
-ax2.plot(x1, w1_o[6,15,:], label='PO4', linewidth=3)
+ax2.set_title(r'$\ Part\ I\ Background\ Data$', fontsize=28)
+ax2.set_xlabel(r'$\ Time/ms$', fontsize=24)
+ax2.set_ylabel(r'$\ Amplitude/μV$', fontsize=24)
+ax2.plot(x1, w1_i[6,15,0,:], label=r'$\ O1$', linewidth=1)
+ax2.plot(x1, w1_i[6,15,1,:], label=r'$\ O2$', linewidth=1)
+ax2.plot(x1, w1_i[6,15,2,:], label=r'$\ OZ$', linewidth=1)
+ax2.plot(x1, w1_i[6,15,3,:], label=r'$\ POZ$', linewidth=1)
+ax2.plot(x1, w1_i[6,15,4,:], label=r'$\ PO3$', linewidth=1)
+ax2.plot(x1, w1_o[6,15,:], label=r'$\ PO4$', linewidth=3)
 ax2.tick_params(axis='both', labelsize=18)
 ax2.legend(loc='lower right', fontsize=16)
 
 ax3 = fig.add_subplot(gs[2, 1])
-ax3.set_title('Part II Background Data', fontsize=28)
-ax3.set_xlabel('Time/ms', fontsize=24)
-ax3.set_ylabel('Amplitude/μV', fontsize=24)
-ax3.plot(x2, w2_i[6,15,0,:], label='O1', linewidth=1)
-ax3.plot(x2, w2_i[6,15,1,:], label='O2', linewidth=1)
-ax3.plot(x2, w2_i[6,15,2,:], label='OZ', linewidth=1)
-ax3.plot(x2, w2_i[6,15,3,:], label='POZ', linewidth=1)
-ax3.plot(x2, w2_i[6,15,4,:], label='PO3', linewidth=1)
-ax3.plot(x2, w2_o[6,15,:], label='PO4', linewidth=3)
+ax3.set_title(r'$\ Part\ II\ Background\ Data$', fontsize=28)
+ax3.set_xlabel(r'$\ Time/ms$', fontsize=24)
+ax3.set_ylabel(r'$\ Amplitude/μV$', fontsize=24)
+ax3.plot(x2, w2_i[6,15,0,:], label=r'$\ O1$', linewidth=1)
+ax3.plot(x2, w2_i[6,15,1,:], label=r'$\ O2$', linewidth=1)
+ax3.plot(x2, w2_i[6,15,2,:], label=r'$\ OZ$', linewidth=1)
+ax3.plot(x2, w2_i[6,15,3,:], label=r'$\ POZ$', linewidth=1)
+ax3.plot(x2, w2_i[6,15,4,:], label=r'$\ PO3$', linewidth=1)
+ax3.plot(x2, w2_o[6,15,:], label=r'$\ PO4$', linewidth=3)
 ax3.tick_params(axis='both', labelsize=18)
 ax3.legend(loc='lower right', fontsize=16)
 
 fig.subplots_adjust(left=0.08, bottom=0.070, right=0.950, top=0.950, hspace=0.5, wspace=0.25)
                     
-plt.savefig(r'E:\Documents\医学工程与转化医学研究院\研究生课题\program\origin_data.png', dpi=600)
+#plt.savefig(r'E:\origin_data-mqf.png', dpi=600)
 plt.show()
 
 #%% linear regression analysis and target channel data estimation
@@ -224,16 +224,16 @@ plt.show()
 # R^2 & w1 estimate data: n_events, n_trials, n_times
 R2_w1, w1_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w1_i)
 # w1 PO4-only data: n_events, n_trials, n_times
-w1_PO4_only_w1 = w1_i[:,:,4,:] - w1_PO4_w1
+w1_PO4_only_w1 = w1_o - w1_PO4_w1
 
 # R^2 & w2 estimate data(use w2): n_events, n_trials, n_times
 R2_w2, w2_PO4_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i)
 # R^2 & w2 estimate data(use w1): n_events, n_trials, n_times
 R2_w1, w2_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, w2_i)
 # w2 PO4-only data(use w1): n_events, n_trials, n_times
-w2_PO4_only_w1w2 = w2_i[:,:,4,:] - w2_PO4_w1
+w2_PO4_only_w1w2 = w2_o - w2_PO4_w1
 # w2 PO4-only data(use w2): n_events, n_trials, n_times
-w2_PO4_only_w2w2 = w2_i[:,:,4,:] - w2_PO4_w2
+w2_PO4_only_w2w2 = w2_o - w2_PO4_w2
 
 # s estimate data(use w1): n_events, n_trials, n_times
 s_PO4_w1 = SPF.mlr_analysis(w1_i, w1_o, signal_data[:,:,0:5,:], regression=False)
@@ -281,9 +281,12 @@ ax1 = fig.add_subplot(gs[:2, :2])
 ax1.set_title(r'$w1\ Comparison\ (w1\ model)$', fontsize=18)
 ax1.set_xlabel(r'$Time/ms$', fontsize=14)
 ax1.set_ylabel(r'$Amplitude/μV$', fontsize=14)
-ax1.plot(x1, np.mean(w1_o[26,:,:], axis=0), label=r'$Original$', linewidth=1.5, color='dodgerblue')
-ax1.plot(x1, np.mean(w1_PO4_w1[26,:,:], axis=0), label=r'$Estimate$', linewidth=1.5, color='coral')
-ax1.plot(x1, np.mean(w1_PO4_only_w1[26,:,:], axis=0), label=r'$Separate$', linewidth=2, color='red')
+ax1.plot(x1, np.mean(w1_o[23,:,:], axis=0), label=r'$Original$',
+         linewidth=1.5, color='dodgerblue')
+ax1.plot(x1, np.mean(w1_PO4_w1[23,:,:], axis=0), label=r'$Estimate$',
+         linewidth=1.5, color='coral')
+ax1.plot(x1, np.mean(w1_PO4_only_w1[23,:,:], axis=0), label=r'$Separate$',
+         linewidth=2, color='red')
 ax1.tick_params(axis='both', labelsize=14)
 ax1.legend(loc='lower left', fontsize=14)
 
@@ -291,9 +294,12 @@ ax2 = fig.add_subplot(gs[:2, 2:4])
 ax2.set_title(r'$w2\ Comparison\ (w1\ model)$', fontsize=18)
 ax2.set_xlabel(r'$Time/ms$', fontsize=14)
 ax2.set_ylabel(r'$Amplitude/μV$', fontsize=14)
-ax2.plot(x2, np.mean(w2_o[26,:,:], axis=0), label=r'$Original$', linewidth=1.5, color='dodgerblue')
-ax2.plot(x2, np.mean(w2_PO4_w1[26,:,:], axis=0), label=r'$Estimate$', linewidth=1.5, color='coral')
-ax2.plot(x2, np.mean(w2_PO4_only_w1w2[26,:,:], axis=0), label=r'$Separate$', linewidth=2, color='red')
+ax2.plot(x2, np.mean(w2_o[23,:,:], axis=0), label=r'$Original$',
+         linewidth=1.5, color='dodgerblue')
+ax2.plot(x2, np.mean(w2_PO4_w1[23,:,:], axis=0), label=r'$Estimate$',
+         linewidth=1.5, color='coral')
+ax2.plot(x2, np.mean(w2_PO4_only_w1w2[23,:,:], axis=0), label=r'$Separate$',
+         linewidth=2, color='red')
 ax2.tick_params(axis='both', labelsize=14)
 ax2.legend(loc='lower right', fontsize=14)
 
@@ -301,9 +307,12 @@ ax3 = fig.add_subplot(gs[:2, 4:6])
 ax3.set_title(r'$w2\ Comparison\ (w2\ model)$', fontsize=18)
 ax3.set_xlabel(r'$Time/ms$', fontsize=14)
 ax3.set_ylabel(r'$Amplitude/μV$', fontsize=14)
-ax3.plot(x2, np.mean(w2_o[26,:,:], axis=0), label=r'$Original$', linewidth=1.5, color='dodgerblue')
-ax3.plot(x2, np.mean(w2_PO4_w2[26,:,:], axis=0), label=r'$Estimate$', linewidth=1.5, color='coral')
-ax3.plot(x2, np.mean(w2_PO4_only_w2w2[26,:,:], axis=0), label=r'$Separate$', linewidth=2, color='red')
+ax3.plot(x2, np.mean(w2_o[23,:,:], axis=0), label=r'$Original$',
+         linewidth=1.5, color='dodgerblue')
+ax3.plot(x2, np.mean(w2_PO4_w2[23,:,:], axis=0), label=r'$Estimate$',
+         linewidth=1.5, color='coral')
+ax3.plot(x2, np.mean(w2_PO4_only_w2w2[23,:,:], axis=0), label=r'$Separate$',
+         linewidth=2, color='red')
 ax3.tick_params(axis='both', labelsize=14)
 ax3.legend(loc='lower right', fontsize=14)
 
@@ -311,10 +320,14 @@ ax4 = fig.add_subplot(gs[2:, :3])
 ax4.set_title(r'$Signal\ Comparison\ (w1\ model)$', fontsize=18)
 ax4.set_xlabel(r'$Time/ms$', fontsize=14)
 ax4.set_ylabel(r'$Amplitude/μV$', fontsize=14)
-ax4.plot(x3, np.mean(signal_data[26,:,5,:], axis=0), label=r'$Original$', linewidth=1.5, color='dodgerblue')
-ax4.plot(x3, np.mean(s_PO4_w1[26,:,:], axis=0), label=r'$Estimate$', linewidth=1.5, color='coral')
-ax4.plot(x3, np.mean(s_PO4_only_w1[26,:,:], axis=0), label=r'$Separate$', linewidth=2, color='red')
-ax4.vlines(8.3, -10, 15, colors='black', linestyles='dashed', label=r'$Start Point$', linewidth=2)
+ax4.plot(x3, np.mean(signal_data[23,:,5,:], axis=0), label=r'$Original$',
+         linewidth=1.5, color='dodgerblue')
+ax4.plot(x3, np.mean(s_PO4_w1[23,:,:], axis=0), label=r'$Estimate$',
+         linewidth=1.5, color='coral')
+ax4.plot(x3, np.mean(s_PO4_only_w1[23,:,:], axis=0), label=r'$Separate$',
+         linewidth=2, color='red')
+ax4.vlines(8.3, -20, 20, colors='black', linestyles='dashed',
+           label=r'$Start Point$', linewidth=2)
 ax4.tick_params(axis='both', labelsize=14)
 ax4.legend(loc='upper right', fontsize=14)
 
@@ -322,16 +335,20 @@ ax5 = fig.add_subplot(gs[2:, 3:])
 ax5.set_title(r'$Signal\ Comparison\ (w2\ model)$', fontsize=18)
 ax5.set_xlabel(r'$Time/ms$', fontsize=14)
 ax5.set_ylabel(r'$Amplitude/μV$', fontsize=14)
-ax5.plot(x3, np.mean(signal_data[26,:,5,:], axis=0), label=r'$Original$', linewidth=1.5, color='dodgerblue')
-ax5.plot(x3, np.mean(s_PO4_w2[26,:,:], axis=0), label=r'$Estimate$', linewidth=1.5, color='coral')
-ax5.plot(x3, np.mean(s_PO4_only_w2[26,:,:], axis=0), label=r'$Separate$', linewidth=2, color='red')
-ax5.vlines(8.3, -10, 15, colors='black', linestyles='dashed', label=r'$Start Point$', linewidth=2)
+ax5.plot(x3, np.mean(signal_data[23,:,5,:], axis=0), label=r'$Original$',
+         linewidth=1.5, color='dodgerblue')
+ax5.plot(x3, np.mean(s_PO4_w2[23,:,:], axis=0), label=r'$Estimate$',
+         linewidth=1.5, color='coral')
+ax5.plot(x3, np.mean(s_PO4_only_w2[23,:,:], axis=0), label=r'$Separate$',
+         linewidth=2, color='red')
+ax5.vlines(8.3, -20, 20, colors='black', linestyles='dashed',
+           label=r'$Start Point$', linewidth=2)
 ax5.tick_params(axis='both', labelsize=14)
 ax5.legend(loc='upper right', fontsize=14)
 
 fig.subplots_adjust(left=0.050, bottom=0.070, right=0.980, top=0.960, hspace=1.000, wspace=0.800)
                     
-plt.savefig(r'E:\Documents\医学工程与转化医学研究院\研究生课题\program\est_bg_data.png', dpi=600)
+plt.savefig(r'E:\est_bg_data-mqf.png', dpi=600)
 plt.show()
 
 #%% model parameter discription (in figure)
@@ -387,8 +404,7 @@ ax4 = sns.distplot(RCw2, rug=True, kde_kws={'color':'dimgrey', 'lw':2})
 
 fig.subplots_adjust(top=0.940, bottom=0.070, left=0.060, right=0.950, hspace=0.800, wspace=1.000)
 
-plt.savefig(r'E:\Documents\医学工程与转化医学研究院\研究生课题\program\boxplot&histogram.png',
-            dpi=600)
+plt.savefig(r'E:\boxplot&histogram-mqf.png', dpi=600)
 plt.show()
 
 #%% zero mean signal sequence
@@ -425,84 +441,199 @@ n_overlap = 0
 n_per_seg = 2048
 
 # psd computation
-s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,200:], sfreq=sfreq, fmin=fmin,
+s_o_psds, s_o_freqs = SPF.welch_p(signal_data[:,:,5,:], sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_w1_psds, s_w1_freqs = SPF.welch_p(s_PO4_w1[:,:,200:], sfreq=sfreq, fmin=fmin,
+s_w1_psds, s_w1_freqs = SPF.welch_p(s_PO4_w1, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_w2_psds, s_w2_freqs = SPF.welch_p(s_PO4_w2[:,:,200:], sfreq=sfreq, fmin=fmin,
+s_w2_psds, s_w2_freqs = SPF.welch_p(s_PO4_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1[:,:,200:], sfreq=sfreq, fmin=fmin,
+s_e_w1_psds, s_e_w1_freqs = SPF.welch_p(s_PO4_only_w1, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2[:,:,200:], sfreq=sfreq, fmin=fmin,
+s_e_w2_psds, s_e_w2_freqs = SPF.welch_p(s_PO4_only_w2, sfreq=sfreq, fmin=fmin,
                 fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
-
-#plt.plot(s_e_w2_freqs[26,26,:],s_e_w2_psds[26,26,:])
-#plt.plot(s_o_freqs[26,26,:],s_o_psds[26,26,:])
-
-#plt.savefig()
-#plt.show()
 
 #%% extract signal's SNR comparison (in frequency domain)
+# X (n_events, n_epochs, n_times)
+# subscript:0,3,6,9,12,15,18,21,24 to 8Hz
+# subscript:1,4,7,10,13,16,19,22,25 to 10Hz
+# subscript:2,5,8,11,14,17,20,23,26 to 15Hz
+
 def snr_F(X):
-    snr = np.zeros((X.shape[0]))
-    K = 102
+    snr = np.zeros((X.shape[0], X.shape[1]))
+    K = 101
     for i in range(X.shape[0]):
-        target = (X[i,30] + X[i,31] + X[i,32]) / 3
-        snr[i] = K * (target / (np.sum(X[i,:]) - target))
+        if i==0 or i==3 or i==6 or i==9 or i==12 or i==15 or i==18 or i==21 or i==24:
+            for j in range(X.shape[1]):  # 8Hz
+                target = X[i,j,17] + X[i,j,18]
+                snr[i,j] = K * (target / (np.sum(X[i,j,:]) - target))
+                
+        if i==1 or i==4 or i==7 or i==10 or i==13 or i==16 or i==19 or i==22 or i==25:
+            for j in range(X.shape[1]):  # 10Hz
+                target = X[i,j,21] + X[i,j,22]
+                snr[i,j] = K * (target / (np.sum(X[i,j,:]) - target))
+                
+        if i==2 or i==5 or i==8 or i==11 or i==14 or i==17 or i==20 or i==23 or i==26:
+            for j in range(X.shape[1]):  # 15Hz
+                target = X[i,j,30] + X[i,j,31]
+                snr[i,j] = K * (target / (np.sum(X[i,j,:]) - target))
     return snr
 
 #%%
-SNR_o_freq = 20*np.log10(snr_F(s_o_psds[26,:,:]))
-SNR_w1_freq = 20*np.log10(snr_F(s_e_w1_psds[26,:,:]))
-SNR_w2_freq = 20*np.log10(snr_F(s_e_w2_psds[26,:,:]))
-
-plt.plot((SNR_w1_freq-SNR_o_freq), label='w1 model')
-plt.plot((SNR_w2_freq-SNR_o_freq), label='w2 model')
-plt.legend(loc='best')
-plt.show()
+SNR_o_freq = 20*np.log10(snr_F(s_o_psds))
+SNR_w1_freq = 20*np.log10(snr_F(s_e_w1_psds))
+SNR_w2_freq = 20*np.log10(snr_F(s_e_w2_psds))
 
 #%%
-fig, axes = plt.subplots(2, 2, figsize=(20,15))
+def snr_single(X):
+    '''
+    compute single trial signal's SNR in frequency domain (multi-conditions)
+    :param X: input signal' spectrum sequence (n_events, )
+    '''
+    snr = np.zeros((X.shape[0]))
+    K= 101
+    for i in range(X.shape[0]):
+        if i==0 or i==3 or i==6 or i==9 or i==12 or i==15 or i==18 or i==21 or i==24:
+            # 8Hz
+            target = (X[i,17] + X[i,18]) / 2
+            snr[i] = K * (target / (np.sum(X[i,:]) - target))
+                
+        if i==1 or i==4 or i==7 or i==10 or i==13 or i==16 or i==19 or i==22 or i==25:
+            # 10Hz
+            target = (X[i,21] + X[i,22]) / 2
+            snr[i] = K * (target / (np.sum(X[i,:]) - target))
+                
+        if i==2 or i==5 or i==8 or i==11 or i==14 or i==17 or i==20 or i==23 or i==26:
+            # 15Hz
+            target = (X[i,30] + X[i,31]) / 2
+            snr[i] = K * (target / (np.sum(X[i,:]) - target))
+    
+    return snr
 
-axes[0,0].set_xlabel('Frequency/Hz', fontsize=16)
-axes[0,0].set_ylabel('Power', fontsize=16)
-axes[0,0].tick_params(axis='both', labelsize=16)
-axes[0,0].set_title('Power Spectrum Density(15Hz)', fontsize=20)
-axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_o_psds[26,:,:], axis=0),
-    color='red', linewidth=1.5, label='Origin')
-axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w1_psds[26,:,:], axis=0),
-    color='coral', linewidth=1.5, label='w1 Estimation')
-axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w2_psds[26,:,:], axis=0),
-    color='dodgerblue', linewidth=1.5, label='w2 Estimation')
+#%%
+SNR_mean_o = snr_single(np.mean(s_o_psds, axis=1))
+SNR_mean_e1_w1 = snr_single((np.mean(s_o_psds, axis=1)-np.mean(s_w1_psds, axis=1)))
+SNR_mean_e1_w2 = snr_single((np.mean(s_o_psds, axis=1)-np.mean(s_w2_psds, axis=1)))
+SNR_mean_e_w1 = snr_single(np.mean(s_e_w1_psds, axis=1))
+SNR_mean_e_w2 = snr_single(np.mean(s_e_w2_psds, axis=1))
+
+#%% plot psd comparision
+fig, axes = plt.subplots(3, 2, figsize=(24,18))
+
+axes[0,0].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[0,0].set_ylabel(r'$\ Power$', fontsize=20)
+axes[0,0].tick_params(axis='both', labelsize=20)
+axes[0,0].set_title(r'$\ Power\ Spectrum\ Density\ (8Hz&0.5pi&0.5s)$', fontsize=24)
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_o_psds[21,:,:], axis=0),
+    color='red', linewidth=2, label=r'$\ Origin$')
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w1_psds[21,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Estimation$')
+axes[0,0].plot(s_o_freqs[0,0,:], np.mean(s_w2_psds[21,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Estimation$')
 axes[0,0].legend(loc='best', fontsize=20)
 
-axes[0,1].set_xlabel('Frequency/Hz', fontsize=16)
-axes[0,1].set_ylabel('Power', fontsize=16)
-axes[0,1].tick_params(axis='both', labelsize=16)
-axes[0,1].set_title('Power Spectrum Density(15Hz)', fontsize=20)
-axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w1_psds[26,:,:], axis=0),
-    color='coral', linewidth=1.5, label='w1 Extraction')
-axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w2_psds[26,:,:], axis=0),
-    color='dodgerblue', linewidth=1.5, label='w2 Extraction')
+axes[0,1].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[0,1].set_ylabel(r'$\ Power$', fontsize=20)
+axes[0,1].tick_params(axis='both', labelsize=20)
+axes[0,1].set_title(r'$\ Power\ Spectrum\ Density\ (8Hz&0.5pi&0.5s)$', fontsize=24)
+axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w1_psds[21,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Extraction$')
+axes[0,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w2_psds[21,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Extraction$')
 axes[0,1].legend(loc='best', fontsize=20)
 
-axes[1,0].set_xlabel('Trials', fontsize=16)
-axes[1,0].set_ylabel('SNR/dB', fontsize=16)
-axes[1,0].tick_params(axis='both', labelsize=16)
-axes[1,0].set_title('Promotion of SNR', fontsize=20)
-axes[1,0].plot(SNR_w1_freq-SNR_o_freq, color='seagreen', linewidth=1.5, label='w1-Origin')
-axes[1,0].plot(SNR_w2_freq-SNR_o_freq, color='goldenrod', linewidth=1.5, label='w2-Origin')
-axes[1,0].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=2)
+axes[1,0].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[1,0].set_ylabel(r'$\ Power$', fontsize=20)
+axes[1,0].tick_params(axis='both', labelsize=20)
+axes[1,0].set_title(r'$\ Power\ Spectrum\ Density\ (10Hz&0.5pi&0.5s)$', fontsize=24)
+axes[1,0].plot(s_o_freqs[0,0,:], np.mean(s_o_psds[22,:,:], axis=0),
+    color='red', linewidth=2, label=r'$\ Origin$')
+axes[1,0].plot(s_o_freqs[0,0,:], np.mean(s_w1_psds[22,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Estimation$')
+axes[1,0].plot(s_o_freqs[0,0,:], np.mean(s_w2_psds[22,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Estimation$')
 axes[1,0].legend(loc='best', fontsize=20)
 
-axes[1,1].set_xlabel('Trials', fontsize=16)
-axes[1,1].set_ylabel('SNR/dB', fontsize=16)
-axes[1,1].tick_params(axis='both', labelsize=16)
-axes[1,1].set_title('Comparison of Models', fontsize=20)
-axes[1,1].plot(SNR_w2_freq-SNR_w1_freq, linewidth=1.5, label='w2-w1')
-axes[1,1].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=2)
+axes[1,1].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[1,1].set_ylabel(r'$\ Power$', fontsize=20)
+axes[1,1].tick_params(axis='both', labelsize=20)
+axes[1,1].set_title(r'$\ Power\ Spectrum\ Density\ (10Hz&0.5pi&0.5s)$', fontsize=24)
+axes[1,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w1_psds[22,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Extraction$')
+axes[1,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w2_psds[22,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Extraction$')
 axes[1,1].legend(loc='best', fontsize=20)
 
+axes[2,0].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[2,0].set_ylabel(r'$\ Power$', fontsize=20)
+axes[2,0].tick_params(axis='both', labelsize=20)
+axes[2,0].set_title(r'$\ Power\ Spectrum\ Density\ (15Hz&0.5pi&0.5s)$', fontsize=24)
+axes[2,0].plot(s_o_freqs[0,0,:], np.mean(s_o_psds[23,:,:], axis=0),
+    color='red', linewidth=2, label=r'$\ Origin$')
+axes[2,0].plot(s_o_freqs[0,0,:], np.mean(s_w1_psds[23,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Estimation$')
+axes[2,0].plot(s_o_freqs[0,0,:], np.mean(s_w2_psds[23,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Estimation$')
+axes[2,0].legend(loc='best', fontsize=20)
+
+axes[2,1].set_xlabel(r'$\ Frequency/Hz$', fontsize=20)
+axes[2,1].set_ylabel(r'$\ Power$', fontsize=20)
+axes[2,1].tick_params(axis='both', labelsize=20)
+axes[2,1].set_title(r'$\ Power\ Spectrum\ Density\ (15Hz&0.5pi&0.5s)$', fontsize=24)
+axes[2,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w1_psds[23,:,:], axis=0),
+    color='coral', linewidth=2, label=r'$\ w1\ Extraction$')
+axes[2,1].plot(s_o_freqs[0,0,:], np.mean(s_e_w2_psds[23,:,:], axis=0),
+    color='dodgerblue', linewidth=2, label=r'$\ w2\ Extraction$')
+axes[2,1].legend(loc='best', fontsize=20)
+
+fig.subplots_adjust(left=0.05, bottom=0.05, right=0.98, top=0.95,
+                    hspace=0.5, wspace=0.2)
+plt.savefig(r'E:/psd-comparision-mqf.png', dpi=600)
+plt.show()
+
+#%% plot SNR comparision
+fig, axes = plt.subplots(2, 2, figsize=(20,15))
+
+axes[0,0].set_xlabel(r'$\ Trials$', fontsize=20)
+axes[0,0].set_ylabel(r'$\ SNR/dB$', fontsize=20)
+axes[0,0].tick_params(axis='both', labelsize=20)
+axes[0,0].set_title(r'$\ Promotion\ of\ SNR(inter-conditions)$', fontsize=24)
+axes[0,0].plot(np.mean(SNR_w1_freq-SNR_o_freq, axis=0), linewidth=2,
+    label=r'$\ w1-Origin$')
+axes[0,0].plot(np.mean(SNR_w2_freq-SNR_o_freq, axis=0), linewidth=2,
+    label=r'$\ w2-Origin$')
+axes[0,0].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=3)
+axes[0,0].legend(loc='best', fontsize=20)
+
+axes[0,1].set_xlabel(r'$\ Trials$', fontsize=20)
+axes[0,1].set_ylabel(r'$\ SNR/dB$', fontsize=20)
+axes[0,1].tick_params(axis='both', labelsize=20)
+axes[0,1].set_title(r'$\ Comparision\ of\ models(inter-conditions)$', fontsize=24)
+axes[0,1].plot(np.mean(SNR_w2_freq-SNR_w1_freq, axis=0), linewidth=2, label=r'$\ w2-w1$')
+axes[0,1].hlines(0, 0, 50, colors='dimgrey', linestyles='dashed', linewidth=3)
+axes[0,1].legend(loc='best', fontsize=20)
+
+axes[1,0].set_xlabel(r'$\ Conditions$', fontsize=20)
+axes[1,0].set_ylabel(r'$\ SNR/dB$', fontsize=20)
+axes[1,0].tick_params(axis='both', labelsize=20)
+axes[1,0].set_title(r'$\ Promotion\ of\ SNR(inter-trials)$', fontsize=24)
+axes[1,0].plot(np.mean(SNR_w1_freq-SNR_o_freq, axis=1), linewidth=2,
+    label=r'$\ w1-Origin$')
+axes[1,0].plot(np.mean(SNR_w2_freq-SNR_o_freq, axis=1), linewidth=2,
+    label=r'$\ w2-Origin$')
+axes[1,0].hlines(0, 0, 26, colors='dimgrey', linestyles='dashed', linewidth=3)
+axes[1,0].legend(loc='best', fontsize=20)
+
+axes[1,1].set_xlabel('Conditions', fontsize=20)
+axes[1,1].set_ylabel('SNR/dB', fontsize=20)
+axes[1,1].tick_params(axis='both', labelsize=20)
+axes[1,1].set_title(r'$\ Comparision\ of\ models(inter-trials)$', fontsize=24)
+axes[1,1].plot(np.mean(SNR_w2_freq-SNR_w1_freq, axis=1), linewidth=2, label=r'$\ w2-w1$')
+axes[1,1].hlines(0, 0, 26, colors='dimgrey', linestyles='dashed', linewidth=3)
+axes[1,1].legend(loc='best', fontsize=20)
+
+fig.subplots_adjust(left=0.07, bottom=0.08, right=0.99, top=0.95,
+                    hspace=0.33, wspace=0.13)
+plt.savefig(r'E:/snr-comparision-mqf.png', dpi=600)
 plt.show()
 
 #%% time-frequency transform
@@ -535,3 +666,75 @@ axes[0,0].set(ylim=freqs[[0, -1]], xlabel='Times/ms')
 fig.colorbar(mesh, ax=axes[0,0])
 
 
+#%%
+def fangcha(X):
+    '''
+    X:()
+    '''
+    EX = np.mean(X,axis=0)
+    for i in range(X.shape[1]):
+        X[:,i] = X[:,i] - EX[i]
+
+    X = X**2
+    return X
+#%%
+def snr(X):
+    '''
+    X: (n_epochs, n_times)
+    '''
+    EX = np.mean(X, axis=0)
+    EX = EX**2
+    Y = np.zeros(())
+    for i in range(EX.shape[0]):
+        Y[:,i] = X[:,i]-EX[i]
+    Y = Y**2
+    EX1 = np.mean(Y, axis=0)
+    snr = EX/EX1
+    return snr
+
+#%%
+X1 = signal_data[26,:,5,:]
+X2 = s_PO4_only_w1[26,:,:]
+X3 = s_PO4_only_w2[26,:,:]
+
+#%%
+snr1 = snr(X1)
+snr2 = snr(X2)
+snr3 = snr(X3)
+
+#%%
+Y1 = np.mean(fangcha(X1), axis=0)
+Y2 = np.mean(fangcha(X2), axis=0)
+Y3 = np.mean(fangcha(X3), axis=0)
+
+#%%
+fig, axes = plt.subplots(2,1)
+axes[0].plot(Y1, label='origin')
+
+axes[1].plot(Y3, label='w2 model')
+#plt.plot(Y2, label='w1 model')
+#plt.plot(Y3, label='w2 model')
+#plt.legend(loc='best')
+#%%
+fig, axes = plt.subplots(3,1)
+
+#axes[0].plot(np.log10(snr1), label='origin', color='red')
+axes[0].plot(snr1, label='origin', color='red')
+axes[0].set_xlabel('time/ms')
+axes[0].set_ylabel('SNR')
+axes[0].vlines(808.3, 0, 1, color='black', linestyles='dashed', label='start point')
+axes[0].legend(loc='best')
+
+#xes[1].plot(np.log10(snr2), label='w1', color='blue')
+axes[1].plot(snr2, label='w1', color='blue')
+axes[1].set_xlabel('time/ms')
+axes[1].set_ylabel('SNR')
+axes[1].vlines(808.3, 0, 1, color='black', linestyles='dashed', label='start point')
+axes[1].legend(loc='best')
+
+#axes[2].plot(np.log10(snr3), label='w2', color='green')
+axes[2].plot(snr3, label='w2', color='green')
+axes[2].set_xlabel('time/ms')
+axes[2].set_ylabel('SNR')
+axes[2].vlines(808.3, 0, 1, color='black', linestyles='dashed', label='start point')
+axes[2].legend(loc='best')

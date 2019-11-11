@@ -18,6 +18,7 @@ from matplotlib.gridspec import GridSpec
 from sklearn.linear_model import LinearRegression
 
 #%% load benchmark dataset & relative information
+
 # load data from .mat file
 eeg = io.loadmat(r'E:\dataset\data\S01.mat')
 info = io.loadmat(r'E:\dataset\Freq_Phase.mat')
@@ -42,9 +43,11 @@ for line in file.readlines():
     channels[k] = v
 file.close()
 
-#del eeg, info
+del eeg, info
 
-#%% load multiple data file
+#%% load multiple data file & also can be used to process multiple data
+
+# CAUTION: may lead to RAM crash (5-D array takes more than 6G) 
 filepath = r'E:\dataset\data'
 
 filelist = []
@@ -58,6 +61,9 @@ for file in filelist:
     temp = io.loadmat(file)
     eeg[i,:,:,:,:] = temp['data']
     i += 1
-
+    
+# add more code here to achieve multiple data processing
+    
+del temp, i, file, filelist, filepath, full_path
 
 #%%

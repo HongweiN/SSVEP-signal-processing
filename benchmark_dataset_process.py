@@ -24,7 +24,6 @@ from sklearn.linear_model import LinearRegression
 import signal_processing_function as SPF 
 
 #%% load benchmark dataset & relative information
-
 # load data from .mat file
 eeg = io.loadmat(r'E:\dataset\data\S01.mat')
 info = io.loadmat(r'E:\dataset\Freq_Phase.mat')
@@ -62,7 +61,6 @@ del v, k, file, line       # release RAM
 del eeg, info     
 
 #%% load multiple data file & also can be used to process multiple data
-
 # CAUTION: may lead to RAM crash (5-D array takes more than 6125MB)
 # Now I know why people need 32G's RAM...PLEASE SKIP THIS PART!!!
 filepath = r'E:\dataset\data'
@@ -106,9 +104,9 @@ del f_data
 # save model data to release RAM, reload before use
 w1_path = r'E:\dataset\model_data\S01\w1'
 w2_path = r'E:\dataset\model_data\S01\w2'
-w3_path = r'E:\dataset\model_data\S01\w1'
-w4_path = r'E:\dataset\model_data\S01\w1'
-s_path = r'E:\dataset\model_data\S01\w1'
+w3_path = r'E:\dataset\model_data\S01\w3'
+w4_path = r'E:\dataset\model_data\S01\w4'
+s_path = r'E:\dataset\signal_data\S01'
 
 io.savemat(w1_path, {'w1':w1})
 io.savemat(w2_path, {'w2':w1})
@@ -119,4 +117,6 @@ io.savemat(s_path, {'signal_data':signal_data})
 del w1, w2, w3, w4, signal_data
 del w1_path, w2_path, w3_path, w4_path, s_path
 
-# %%
+#%% reload data to do multi-linear regression
+
+#%% use inverse array to make spatial filter

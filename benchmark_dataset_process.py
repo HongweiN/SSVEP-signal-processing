@@ -52,5 +52,12 @@ for file in os.listdir(filepath):
     full_path = os.path.join(filepath, file)
     filelist.append(full_path)
 
+i = 0
+eeg = np.zeros((35, 64, 1500, 40, 6))
 for file in filelist:
-    eeg_temp = io.loadmat
+    temp = io.loadmat(file)
+    eeg[i,:,:,:,:] = temp['data']
+    i += 1
+
+
+#%%

@@ -39,7 +39,7 @@ from sklearn.linear_model import LinearRegression
 from scipy import signal
 
 #%% MLR analysis (computation & estimation)
-def mlr_analysis(X1, Y, X2, regression=True):
+def mlr_analysis(X1, Y, X2, regression=True, constant=True):
     '''
     Do multi-linear regression repeatedly and estimate one-channel signal
     Model = LinearRegression().fit(X,Y): X(n_chans, n_times) & Y(n_chans, n_times)
@@ -70,7 +70,7 @@ def mlr_analysis(X1, Y, X2, regression=True):
     # R^2 adjustment coefficient
     correc_co = (X1.shape[3] - 1) / (X1.shape[3] - X1.shape[2] - 1)
     
-    # regression coefficient array: RC (n_events, n_epochs, rc array)
+    # regression coefficient array: RC (n_chans, n_events, n_epochs)
     RC = np.zeros((X1.shape[2], X1.shape[0], X1.shape[1]))
     
     # regression intercept array: RI (n_events, n_epochs): 
@@ -93,12 +93,17 @@ def mlr_analysis(X1, Y, X2, regression=True):
     for i in range(X2.shape[0]):
         for j in range(X2.shape[1]):
             Target[i,j,:] = (np.mat(RC[:,i,j].T) * np.mat(X2[i,j,:,:])).A
-            Target[i,j,:] += RI[i,j]
+            if constant == True:
+                Target[i,j,:] += RI[i,j]
+            else:
+                continue
+    
+    Extraction = X2 - Target
     
     if regression == True:
-        return R2, Target
-    elif regression == False:
-        return Target
+        return RC, RI, R2, Target, Extraction
+    if regression == False:
+        return Target, Extraction
 
 #%% SNR computation
 def snr_sa(X):

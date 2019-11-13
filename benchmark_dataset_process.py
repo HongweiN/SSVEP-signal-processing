@@ -4,7 +4,7 @@ Created on Mon Nov 11 20:06:59 2019
 Use benchmark dataset to complete my research
 @author: Brynhildr
 """
-#%% import third part module
+#%% Import third part module
 import numpy as np
 from numpy import transpose
 import scipy.io as io
@@ -23,7 +23,7 @@ from sklearn.linear_model import LinearRegression
 
 import signal_processing_function as SPF 
 
-#%% load benchmark dataset & relative information
+#%% Load benchmark dataset & relative information
 # load data from .mat file
 eeg = io.loadmat(r'E:\dataset\data\S01.mat')
 info = io.loadmat(r'E:\dataset\Freq_Phase.mat')
@@ -36,11 +36,7 @@ data = eeg['data']
 # reshape data array: (n_events, n_epochs, n_chans, n_times)
 data = data.transpose((2, 3, 0, 1))  
 
-# combine data array
-# param X: (n_trials, n_chans, n_times)
-# X = data[0,:,:,:]
-# for i in range(temp.shape[0]-1):
-    # X = np.concatenate((X, temp[i+1,:,:,:]), axis=0)
+# combine data array: np.concatenate(X, Y, axis=)
 
 # condition infomation
 sfreq = 250
@@ -60,7 +56,7 @@ file.close()
 del v, k, file, line       # release RAM
 del eeg, info     
 
-#%% load multiple data file & also can be used to process multiple data
+#%% Load multiple data file & also can be used to process multiple data
 # CAUTION: may lead to RAM crash (5-D array takes more than 6125MB)
 # Now I know why people need 32G's RAM...PLEASE SKIP THIS PART!!!
 filepath = r'E:\dataset\data'
@@ -81,7 +77,7 @@ for file in filelist:
     
 del temp, i, file, filelist, filepath, full_path
 
-#%% data preprocessing
+#%% Data preprocessing
 # filtering
 f_data = np.zeros((40,6,64,1500))
 for i in range(data.shape[0]):
@@ -114,14 +110,14 @@ io.savemat(s_path, {'signal_data':signal_data})
 del w1, w2, w3, signal_data
 del w1_path, w2_path, w3_path, s_path
 
-#%% reload data 
-# data size: (n_events, n_epochs, n_chans, n_blocks) 
+#%% Reload data 
+# data size: (n_events, n_epochs, n_chans, n_times) 
 w1 = io.loadmat(r'E:\dataset\model_data\S01\w1.mat')
 w2 = io.loadmat(r'E:\dataset\model_data\S01\w2.mat')
 w3 = io.loadmat(r'E:\dataset\model_data\S01\w3.mat')
 signal_data = io.loadmat(r'E:\dataset\signal_data\S01.mat')
 
-#%% divide input&output data for model
+#%% Divide input&output data for model
 
 # pick input channels:
 # choose output channels:
@@ -142,9 +138,25 @@ w3_o = w3[:,:,?,:]
 sig_i = signal_data[:,:,?,:]
 sig_o = signal_data[:,:,?,:]
 
-#del w1, w2, w3, signal_data
+#%% Inter-channel correlation analysis: canonical correlation analysis (CCA)
 
-#%% spatial filter: multi-linear regression method
+#%% Inter-channel correlation analysis: Spearman correlation
+w1_corr_sp = SPF.corr_coef(w1, 'spearman')
+w2_corr_sp = SPF.corr_coef(w2, 'spearman')
+w3_corr_sp = SPF.corr_coef(w3, 'spearman')
+
+# may need to compute in different parts
+sig_corr_sp = SPF.corr_coef(signal_data[:,:,?,:], mode='spearman')
+
+#%% Inter-channel correlation analysis: Pearson correlation
+w1_corr_sp = SPF.corr_coef(w1, mode='pearson')
+w2_corr_sp = SPF.corr_coef(w2, mode='pearson')
+w3_corr_sp = SPF.corr_coef(w3, mode='pearson')
+
+# may need to compute in different parts
+sig_corr_sp = SPF.corr_coef(signal_data[:,:,?,:], mode='pearson')
+
+#%% Spatial filter: multi-linear regression method
 # regression coefficient, intercept, R^2
 rc_w1, ri_w1, r2_w1 = SPF.mlr_analysis(w1_i, w1_o)
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
@@ -170,7 +182,7 @@ s_mes_w2, s_mex_w2 = SPF.sig_extract(rc_w2, sig_i, sig_o, intercept=ri_w2)
 # signal part data (use w3): 
 s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, intercept=ri_w3)
 
-#%% spatial filter: inverse array method
+#%% Spatial filter: inverse array method
 # filter coefficient
 sp_w1 = SPF.inv_spa(w1_i, w1_o)
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
@@ -196,13 +208,35 @@ s_ies_w2, s_iex_w2 = SPF.sig_extract(sp_w2, sig_i, sig_o)
 # signal part data (use w3):
 s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o)
 
+#%% Variance
+
+#%% Cosine similarity (background part): normal sim
+w1_w1_m_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
+w2_w2_m_nsim = 
+w2_w3_m_nsim = 
+w3_w3_m_nsim = 
+
+w1_w1_i_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
+w2_w2_i_nsim = 
+w2_w3_i_nsim = 
+w3_w3_i_nsim = 
+
+#%% 
+# tanimoto coefficient (generalized Jaccard)
+w1_w1_m_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
+w2_w2_m_nsim = 
+w2_w3_m_nsim = 
+w3_w3_m_nsim = 
+
+w1_w1_i_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
+w2_w2_i_nsim = 
+w2_w3_i_nsim = 
+w3_w3_i_nsim = 
+
+
 #%% Power spectrum density
 
 #%% Precise FFT transform
-
-#%% Variance
-
-#%% Pearson correlation
 
 #%% SNR in time domain
 

@@ -22,7 +22,9 @@ Continuously updating...
 8. Cosine similarity:
     (1) Normal
     (2) Tanimoto (Generalized Jaccard)
-9. Residual analysis
+9. Canonical correlation analysis (CCA)
+10. Spearman correlation coefficient (inter-channel)
+11. Residual analysis
  
 
 @author: Brynhildr
@@ -33,7 +35,9 @@ import math
 import mne
 from mne.time_frequency import tfr_array_morlet, psd_array_welch, stft
 from sklearn.linear_model import LinearRegression
+from sklearn.cross_decomposition import CCA
 from scipy import signal
+import pandas as pd
 
 #%% spatial filter
 def inv_spa(data, target):
@@ -324,22 +328,64 @@ def precise_fft(X, ):
 
 
 #%% cosine similarity
-def cos_sim(origin, estimate):
+def cos_sim(X, Y, mode):
     '''
-    Compute one kind of cosine similarity of two signal sequence
-    sim(x,y) = xy / (||x|| * ||y||), x&y are multivariate vectors
-    :param origin: origin data array (n_events, n_epochs, n_times)
-    :param estimate: estimate data using MLR (n_events, n_epochs, n_times)
+    Compute two kind of cosine similarity of two signal sequence:
+        (1) sim(x,y) = xy / (||x|| * ||y||), x&y are multivariate vectors
+        (2) tanimoto(x,t) = xy / (x*x + y*y - x*y)
+    :param X: origin data array (n_events, n_epochs, n_times)
+    :param Y: estimate data using MLR (n_events, n_epochs, n_times)
+    :param mode: str, choose method
     '''
+    sim = np.zeros((X.shape[0], X.shape[1]))
+    # (n_events, n_epochs)
+    if mode == 'normal':
+        for i in range(X.shape[0]):
+            for j in range(X.shape[1]):
+                xy = np.sum(X[i,j,:] * Y[i,j,:])
+                mx = (np.sum(X[i,j,:]**2)) ** 0.5
+                my = (np.sum(Y[i,j,:]**2)) ** 0.5
+                sim[i,j] = xy / (mx * my)
+    
+    if mode == 'tanimoto':
+        for i in range(X.shape[0]):
+            for j in range(X.shape[1]):
+                xy = np.sum(X[i,j,:] * Y[i,j,:])
+                xx = np.sum(X[i,j,:]**2)
+                yy = np.sum(Y[i,j,:]**2)
+                sim[i,j] = xy / (xx + yy - xy)
+                
+    return sim
 
-    return SIM
-
-def tanimoto_sim(origin, estimate):
+#%% Canonical correlation analysis (CCA)
+def cca_coef(X, Y):
     '''
-    Compute another cosine similarity of two signal sequence
-    also called generalized Jaccard coefficient
-    sim(x,y) = xy / (x*x + y*y - x*y), x&y are multivariate vectors
+    Apply CCA method to compute inter_channel correlation
+    :param X: data 1 (n_events, n_epochs, n_chans, n_times)
+    :param Y: data 2 (actually equal to data 1)
     '''
+    cca = CCA(n_components=1)
 
-    return SIM
+
+#%% inter-channel correlation coefficient
+def corr_coef(X, mode):
+    '''
+    Contains Spearman & Pearson correlation coefficient
+    :param X: input data (n_events, n_epochs, n_chans, n_times)
+    :param mode: str, choose which method to use
+    '''
+    corr = np.zeros((X.shape[0], X.shape[1], X.shape[2], X.shape[2]))
+
+    if mode == 'pearson':
+        for i in range(X.shape[0]):
+            for j in range(X.shape[1]):
+                corr[i,j,:,:] = np.corrcoef(X[i,j,:,:])
+
+    if mode == 'spearman':
+        for i in range(X.shape[0]):
+            for j in range(X.shape[1]):
+                temp = pd.DataFrame(X[i,j,:,:].T)
+                corr[i,j,:,:] = temp.corr('spearman')
+    
+    return corr
 

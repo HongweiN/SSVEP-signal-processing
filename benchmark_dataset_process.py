@@ -23,6 +23,8 @@ from sklearn.linear_model import LinearRegression
 
 import signal_processing_function as SPF 
 
+
+#%%*************************Part I: processing data*************************
 #%% Load benchmark dataset & relative information
 # load data from .mat file
 eeg = io.loadmat(r'E:\dataset\data\S01.mat')
@@ -175,17 +177,14 @@ w3_mes_w3, w3_mex_w3 = SPF.sig_extract(rc_w3, w3_i, w3_o, intercept=ri_w3)
 
 # signal part data (use w1):
 s_mes_w1, s_mex_w1 = SPF.sig_extract(rc_w1, sig_i, sig_o, intercept=ri_w1)
-
 # signal part data (use w2):
 s_mes_w2, s_mex_w2 = SPF.sig_extract(rc_w2, sig_i, sig_o, intercept=ri_w2)
-
 # signal part data (use w3): 
 s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, intercept=ri_w3)
 
 #%% Spatial filter: inverse array method
 # filter coefficient
 sp_w1 = SPF.inv_spa(w1_i, w1_o)
-
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
 w1_ies_w1, w1_iex_w1 = SPF.sig_extract(sp_w1, w1_i, w1_o)
 
@@ -210,41 +209,27 @@ s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o)
 #%% Variance
 
 #%% Cosine similarity (background part): normal
-# w1 estimate (w1 model) & w1 original, mlr, normal similarity
+# w1 estimate (w1 model) & w1 original, mlr, normal similarity, the same below
 w1_w1_m_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
-# w2 estimate (w2 model) & w2 original, mlr, normal similarity
 w2_w2_m_nsim = SPF.cos_sim(w2_o, w2_mes_w2, mode='normal')
-# w3 estimate (w2 model) & w3 original, mlr, normal similarity
 w2_w3_m_nsim = SPF.cos_sim(w3_o, w2_mes_w3, mode='normal')
-# w3 estimate (w3 model) & w3 original, mlr, normal similarity
 w3_w3_m_nsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 
-# w1 estimate (w1 model) & w1 original, inverse array, normal similarity
 w1_w1_i_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
-# w2 estimate (w2 model) & w2 original, inverse array, normal similarity
 w2_w2_i_nsim = SPF.cos_sim(w2_o, w2_mes_w2, mode='normal')
-# w3 estimate (w2 model) & w3 original, inverse array, normal similarity
 w2_w3_i_nsim = SPF.cos_sim(w3_o, w2_mes_w3, mode='normal')
-# w3 estimate (w3 model) & w3 original, inverse array, normal similarity
 w3_w3_i_nsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 
 #%% Cosine similarity (background part): Tanimoto (generalized Jaccard)
-# w1 estimate (w1 model) & w1 original, mlr, Tanimoto
+# w1 estimate (w1 model) & w1 original, mlr, Tanimoto, the same below
 w1_w1_m_tsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
-# w2 estimate (w2 model) & w2 original, mlr, Tanimoto
 w2_w2_m_tsim = SPF.cos_sim(w2_o, w2_mes_w2, mode='normal')
-# w3 estimate (w2 model) & w3 original, mlr, Tanimoto
 w2_w3_m_tsim = SPF.cos_sim(w3_o, w2_mes_w3, mode='normal')
-# w3 estimate (w3 model) & w3 original, mlr, Tanimoto
 w3_w3_m_tsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 
-# w1 estimate (w1 model) & w1 original, inverse array, Tanimoto
 w1_w1_i_tsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
-# w2 estimate (w2 model) & w2 original, inverse array, Tanimoto
 w2_w2_i_tsim = SPF.cos_sim(w2_o, w2_mes_w2, mode='normal')
-# w3 estimate (w2 model) & w3 original, inverse array, Tanimoto
 w2_w3_i_tsim = SPF.cos_sim(w3_o, w2_mes_w3, mode='normal')
-# w3 estimate (w3 model) & w3 original, inverse array, Tanimoto
 w3_w3_i_tsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 
 #%% Power spectrum density
@@ -254,3 +239,7 @@ w3_w3_i_tsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 #%% SNR in time domain
 
 #%% SNR in frequency domain
+
+
+#%%*************************Part II: plot figures*************************
+#%% 

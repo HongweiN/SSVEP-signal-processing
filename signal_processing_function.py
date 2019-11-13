@@ -116,7 +116,7 @@ def sig_extract(coef, data, target, intercept=None):
 
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(X2[i,j,:,:])).A
+            estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(data[i,j,:,:])).A
             if intercept == None:
                 continue
             else:

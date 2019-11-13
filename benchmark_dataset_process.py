@@ -114,56 +114,96 @@ io.savemat(s_path, {'signal_data':signal_data})
 del w1, w2, w3, signal_data
 del w1_path, w2_path, w3_path, s_path
 
-#%% reload data, then divide input&output data for model
+#%% reload data 
 # data size: (n_events, n_epochs, n_chans, n_blocks) 
 w1 = io.loadmat(r'E:\dataset\model_data\S01\w1.mat')
 w2 = io.loadmat(r'E:\dataset\model_data\S01\w2.mat')
 w3 = io.loadmat(r'E:\dataset\model_data\S01\w3.mat')
 signal_data = io.loadmat(r'E:\dataset\signal_data\S01.mat')
 
+#%% divide input&output data for model
+
+# pick input channels:
+# choose output channels:
+
 # w1 model data: 0-500ms
-w1_i = w1[:,:,?,:]  # pick input channels:
-w1_o = w1[:,:,?,:]  # choose output channels:
+w1_i = w1[:,:,?,:]
+w1_o = w1[:,:,?,:]
 
 # w2 model data: 0-250ms
-w2_i = w2[:,:,?,:]  # pick input channels:
-w2_o = w2[:,:,?,:]  # choose output channels:
+w2_i = w2[:,:,?,:]
+w2_o = w2[:,:,?,:]
 
 # w3 model data: 250-500ms
-w3_i = w3[:,:,?,:]  # pick input channels:
-w3_o = w3[:,:,?,:]  # choose output channels:
+w3_i = w3[:,:,?,:]
+w3_o = w3[:,:,?,:]
 
-del w1, w2, w3
+# signal part data: 500ms-1250ms
+sig_i = signal_data[:,:,?,:]
+sig_o = signal_data[:,:,?,:]
 
-#%% multi-linear regression analysis
+#del w1, w2, w3, signal_data
+
+#%% spatial filter: multi-linear regression method
 # regression coefficient, intercept, R^2
-# w1 estimate & extract data:(n_events, n_epochs, n_times)
-rc_w1, ri_w1, r2_w1, w1_es_w1, w1_ex_w1 = SPF.mlr_analysis(w1_i, w1_o, w1_i,
-                            regression=True, constant=True)
+rc_w1, ri_w1, r2_w1 = SPF.mlr_analysis(w1_i, w1_o)
+# w1 estimate & extract data: (n_events, n_epochs, n_times)
+w1_mes_w1, w1_mex_w1 = SPF.sig_extract(rc_w1, w1_i, w1_o, intercept=ri_w1)
 
 # the same but w2 part data:
-rc_w2, ri_w2, r2_w2, w2_es_w2, w2_ex_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i,
-                            regression=True, constant=True)
+rc_w2, ri_w2, r2_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i)
+w2_mes_w2, w2_mex_w2 = SPF.sig_extract(rc_w2, w2_i, w2_o, intercept=ri_w2)
 
 # the same but w3 part data (use w2)
-w2_es_w3, w2_ex_w3 = SPF.mlr_analysis(w2_i, w2_o, w3_i,
-                            regression=False, constant=True)
+w2_mes_w3, w2_mex_w3 = SPF.sig_extract(rc_w2, w3_i, w3_o, intercept=ri_w2)
 
 # the same but w3 part data (use w3)
-rc_w3, ri_w3, r2_w3, w3_es_w3, w3_ex_w3 = SPF.mlr_analysis(w3_i, w3_o, w3_i,
-                            regression=True, constant=True)
+rc_w3, ri_w3, r2_w3 = SPF.mlr_analysis(w3_i, w3_o, w3_i)
+w3_mes_w3, w3_mex_w3 = SPF.sig_extract(rc_w3, w3_i, w3_o, intercept=ri_w3)
 
 # signal part data (use w1):
-s_es_w1, s_ex_w1 = SPF.mlr_analysis(w1_i, w1_o, signal_data[:,:,?,:],
-                            regression=False, constant=True)
+s_mes_w1, s_mex_w1 = SPF.sig_extract(rc_w1, sig_i, sig_o, intercept=ri_w1)
 
 # signal part data (use w2):
-s_es_w2, s_ex_w2 = SPF.mlr_analysis(w2_i, w2_o, signal_data[:,:,?,:],
-                            regression=False, constant=True)
+s_mes_w2, s_mex_w2 = SPF.sig_extract(rc_w2, sig_i, sig_o, intercept=ri_w2)
 
 # signal part data (use w3): 
-s_es_w3, s_ex_w3 = SPF.mlr_analysis(w3_i, w3_o, signal_data[:,:,?,:],
-                            regression=False, constant=True)
+s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, intercept=ri_w3)
 
-#%% use inverse array to make spatial filter
+#%% spatial filter: inverse array method
+# filter coefficient
+sp_w1 = SPF.inv_spa(w1_i, w1_o)
+# w1 estimate & extract data: (n_events, n_epochs, n_times)
+w1_ies_w1, w1_iex_w1 = SPF.sig_extract(sp_w1, w1_i, w1_o)
 
+# the same but w2 part data:
+sp_w2 = SPF.inv_spa(w2_i, w2_o)
+w2_ies_w2, w2_iex_w2 = SPF.sig_extract(sp_w2, w2_i, w2_o)
+
+# the same but w3 part data (use w2):
+w2_ies_w3, w2_iex_w3 = SPF.sig_extract(sp_w2, w3_i, w3_o)
+
+# the same but w3 part data (use w3):
+sp_w3 = SPF.inv_spa(w3_i, w3_o)
+w3_ies_w3, w3_iex_w3 = SPF.sig_extract(sp_w3, w3_i, w3_o)
+
+# signal part data (use w1):
+s_ies_w1, s_iex_w1 = SPF.sig_extract(sp_w1, sig_i, sig_o)
+
+# signal part data (use w2):
+s_ies_w2, s_iex_w2 = SPF.sig_extract(sp_w2, sig_i, sig_o)
+
+# signal part data (use w3):
+s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o)
+
+#%% Power spectrum density
+
+#%% Precise FFT transform
+
+#%% Variance
+
+#%% Pearson correlation
+
+#%% SNR in time domain
+
+#%% SNR in frequency domain

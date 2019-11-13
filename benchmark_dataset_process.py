@@ -29,11 +29,11 @@ eeg = io.loadmat(r'E:\dataset\data\S01.mat')
 info = io.loadmat(r'E:\dataset\Freq_Phase.mat')
 
 data = eeg['data']
-# (64, 1500, 40, 6) = (n_chans, n_times, n_stims, n_blocks)
+# (64, 1500, 40, 6) = (n_chans, n_times, n_events, n_blocks)
 # total trials = n_conditions x n_blocks = 240
 # all epochs are down-sampled to 250 Hz, HOLLY SHIT!
 
-# reshape data array: (n_stims, n_epochs, n_chans, n_times)
+# reshape data array: (n_events, n_epochs, n_chans, n_times)
 data = data.transpose((2, 3, 0, 1))  
 
 # combine data array
@@ -115,7 +115,7 @@ del w1, w2, w3, signal_data
 del w1_path, w2_path, w3_path, s_path
 
 #%% reload data, then divide input&output data for model
-# data size: (n_stims, n_epochs, n_chans, n_blocks) 
+# data size: (n_events, n_epochs, n_chans, n_blocks) 
 w1 = io.loadmat(r'E:\dataset\model_data\S01\w1.mat')
 w2 = io.loadmat(r'E:\dataset\model_data\S01\w2.mat')
 w3 = io.loadmat(r'E:\dataset\model_data\S01\w3.mat')
@@ -137,7 +137,7 @@ del w1, w2, w3
 
 #%% multi-linear regression analysis
 # regression coefficient, intercept, R^2
-# w1 estimate & extract data:(n_stims, n_epochs, n_times)
+# w1 estimate & extract data:(n_events, n_epochs, n_times)
 rc_w1, ri_w1, r2_w1, w1_es_w1, w1_ex_w1 = SPF.mlr_analysis(w1_i, w1_o, w1_i,
                             regression=True, constant=True)
 

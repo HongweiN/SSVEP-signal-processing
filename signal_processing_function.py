@@ -5,28 +5,25 @@ Created on Wed Oct 30 16:41:33 2019
 This module contains some useful functions to help processing EEG data
 Continuously updating...
 
-2019-10-30:
-    1. Multi-linear regression estimation
-    2. SNR computing based on superimposed average method
-    3. Baseline correction based on zero mean method
-    
-2019-10-31:
-    4. Time-frequency transform analysis using Morlet wavelet
-    
-2019-11-3:
-    5. Welch power spectral density analysis
-    6. Multi-linear regression computation (combined with No.1)
-
-2019-11-10:
-    7. Time-frequency transform using STFT (combined with No.4)
-    8. Precise FFT transform
-    9. SNR of SSVEP signal (in frequency domain) (combined with No.2)
-    10. Find spectrum peaks (combined with No.9)
-
-2019-11-:
-    11. Cosine similarity of two signal sequence
-    12. Residual analysis of estimate signal and original signal
-    13. 
+1. Spatial filter: 
+    (1) Multi-linear regression
+    (2) Inverse array
+2. Signal estimate & extraction
+3. SNR computarion: 
+    (1) Superimposed average
+    (2) SSVEP frequency domain
+    (3) SSVEP time domain
+4. Baseline correction: (zero mean method)
+5. Time-frequency transform:
+    (1) Morlet wavelet
+    (2) Short-time Fourier transform (STFT)
+6. Power spectral density: (Welch method)
+7. Precise FFT transform
+8. Cosine similarity:
+    (1) Normal
+    (2) Tanimoto (Generalized Jaccard)
+9. Residual analysis
+ 
 
 @author: Brynhildr
 """
@@ -38,72 +35,97 @@ from mne.time_frequency import tfr_array_morlet, psd_array_welch, stft
 from sklearn.linear_model import LinearRegression
 from scipy import signal
 
-#%% MLR analysis (computation & estimation)
-def mlr_analysis(X1, Y, X2, regression=True, constant=True):
+#%% spatial filter
+def inv_spa(data, target):
     '''
-    Do multi-linear regression repeatedly and estimate one-channel signal
-    Model = LinearRegression().fit(X,Y): X(n_chans, n_times) & Y(n_chans, n_times)
-    :param X1: input model: 4D array (n_events, n_epochs, n_chans, n_times)
-    :param Y: output model: output model: 3D array (n_events, n_epochs, n_times)
-    :param X2: input signal: 4D array (n_events, n_epochs, n_chans, n_times)
-    :param target: 3D signal data array (n_events, n_epochs, n_times)
+    Use inverse array to create spatial filter A
+    Y=AX, Y (X.T) ((XX.T)^(-1))= A
+    Use mat() to transform array to matrix to apply linear computation
+    Use .A to transform matrix to array to apply normal functions
+    :param data: input model (n_stims, n_epochs, n_chans, n_times)
+    :param target: output model (n_stims, n_epochs, n_times)
+    :param coef: bool, if True, return filter coefficients A
+    '''
+    a = np.zeros((data.shape[0], data.shape[1], data.shape[2]))
 
-    Part I:
-        Return R^2(after correction), coefficient, intercept
-        R^2 here is a corrected version: 
-            new R^2 = 1-(RSS/TSS)*((n-1)/(n-k-1)) = 1-(1-R^2)*((n-1)/(n-k-1))
-            (n: time points;   k: input channels' number)
-            which is a little less than original R^2 
-            and more accurate for MLR than LR(linear regression)
-    
-    Part II:
-        Estimate equation: y = a + b1*x1 + b2*x2 + ... + bn*xn
-        Use mat() to transform array to matrix to apply linear computation
-        Use .A to transform matrix to array to apply normal functions
-    
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            # transform array to matrix
+            y = np.mat(target[i,j,:])     # (1,T)
+            x = np.mat(data[i,j,:,:])     # (N,T)
+            xt = np.mat(data[i,j,:,:].T)  # (T,N)
+
+            xxt = x * xt                  # matrix multiplication (N,N)
+            ixxt = xxt.I                  # inverse matrix (N,N)
+            a[i,j,:] = y * xt * ixxt      # A =Y*(X.T)*((XX.T)^(-1)): (1,N)
+
+    a = a.A                               # transform matrix to array
+
+    return a
+
+def mlr_analysis(data, target):
+    '''
+    Do multi-linear regression repeatedly
+    Model = LinearRegression().fit(X,Y): X(n_chans, n_times) & Y(n_chans, n_times)
+    :param data: input model: 4D array (n_events, n_epochs, n_chans, n_times)
+    :param target: output model: output model: 3D array (n_events, n_epochs, n_times)
+    Return R^2(after correction), coefficient, intercept
+    R^2 here is a corrected version: 
+        new R^2 = 1-(RSS/TSS)*((n-1)/(n-k-1)) = 1-(1-R^2)*((n-1)/(n-k-1))
+        (n: time points;   k: input channels)
+        which will be a little less than original R^2 but more accurate
     Expected to add in future: F-score, T-score, collinear diagnosis, ANOVA,
         correlation, coefficient correlation, RSS analysis, 95% confidence interval
     '''
-    # R^2 array: R2 (n_events, n_epochs)
-    R2 = np.zeros((X1.shape[0], X1.shape[1]))
+    # R^2: R2 (n_events, n_epochs)
+    R2 = np.zeros((data.shape[0], data.shape[1]))
 
     # R^2 adjustment coefficient
-    correc_co = (X1.shape[3] - 1) / (X1.shape[3] - X1.shape[2] - 1)
+    correc_co = (data.shape[3]-1) / (data.shape[3]-data.shape[2]-1)
     
-    # regression coefficient array: RC (n_chans, n_events, n_epochs)
-    RC = np.zeros((X1.shape[2], X1.shape[0], X1.shape[1]))
+    # regression coefficient: RC (n_events, n_epochs, n_chans)
+    RC = np.zeros((data.shape[0], data.shape[1], data.shape[2]))
     
-    # regression intercept array: RI (n_events, n_epochs): 
-    RI = np.zeros((X1.shape[0], X1.shape[1]))
-    
-    # estimate data array
-    Target = np.zeros((X2.shape[0], X2.shape[1], X2.shape[3]))
+    # regression intercept: RI (n_events, n_epochs): 
+    RI = np.zeros((data.shape[0], data.shape[1]))
 
-    for i in range(X1.shape[0]):
-        for j in range(X1.shape[1]):  # i for events, j for epochs
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):  # i for events, j for epochs
             # linear regression, remember to transform the array
-            L = LinearRegression().fit(X1[i,j,:,:].T, Y[i,j,:].T)
+            L = LinearRegression().fit(data[i,j,:,:].T, target[i,j,:].T)
             # the coefficient of derterminated R^2 of the prediction
-            R2[i,j] = 1 - (1 - L.score(X1[i,j,:,:].T, Y[i,j,:])) * correc_co
+            R2[i,j] = 1 - (1 - L.score(data[i,j,:,:].T, target[i,j,:])) * correc_co
             # the intercept of the model
             RI[i,j] = L.intercept_
             # the regression coefficient of the model
-            RC[:,i,j] = L.coef_
+            RC[i,j,:] = L.coef_
 
-    for i in range(X2.shape[0]):
-        for j in range(X2.shape[1]):
-            Target[i,j,:] = (np.mat(RC[:,i,j].T) * np.mat(X2[i,j,:,:])).A
-            if constant == True:
-                Target[i,j,:] += RI[i,j]
-            else:
+    return RC, RI, R2
+
+
+#%% signal extraction
+def sig_extract(coef, data, target, intercept=None):
+    '''
+    :param coef: from spatial filter or regression (n_events, n_epochs, n_chans)
+    :param data: input data (n_events, n_epochs, n_chans, n_times)
+    :param target: original data (one-channel)
+    :param intercept: regression intercept (n_events, n_epochs)
+    estimate & extract: one-channel data
+    '''
+    estimate = np.zeros((data.shape[0], data.shape[1], data.shape[3]))
+
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(X2[i,j,:,:])).A
+            if intercept == None:
                 continue
+            else:
+                estimate[i,j,:] += intercept[i,j]
     
-    Extraction = X2 - Target
-    
-    if regression == True:
-        return RC, RI, R2, Target, Extraction
-    if regression == False:
-        return Target, Extraction
+    extract =  target - estimate
+
+    return estimate, extract
+
 
 #%% SNR computation
 def snr_sa(X):
@@ -161,10 +183,15 @@ def snr_freq(X):
     
     return snr
 
+def snr_time(X):
+    '''
+    '''
+
+
 #%% baseline correction
 def zero_mean(X):
     '''
-    :param: input signal array, 4D (n_events, n_epochs, n_chans, n_times)
+    :param X: input signal array, 4D (n_events, n_epochs, n_chans, n_times)
         or 3D(n_events, n_epochs, n_times)
     Zero mean a signal sequence
     '''
@@ -181,6 +208,7 @@ def zero_mean(X):
             for j in range(X.shape[1]):
                 Y[i,j,:]=X[i,j,:]-np.mean(X[i,j,:])            
     return Y
+
 
 #%% time-frequency transform
 def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
@@ -252,11 +280,12 @@ def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
                           freqs=freqs, n_cycles=n_cycles, output='avg_power_itc')
         return API
     
-def tfr_stft(X, sfreq, freqs):
+def tfr_stft(X, sfreq, freqs, mode):
     '''
     Basic library is mne
     Use STFT(short-time fourier transform) to do time-frequency transform
     '''
+
 
 #%% power spectral density
 def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
@@ -283,7 +312,8 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
 
     return psds, freqs
 
-#%% Frequency spectrum
+
+#%% frequency spectrum
 def precise_fft(X, ):
     '''
     Compute & plot frequency spectrum of signal
@@ -291,6 +321,7 @@ def precise_fft(X, ):
     :param n_fft: fft points
     6
     '''
+
 
 #%% cosine similarity
 def cos_sim(origin, estimate):
@@ -311,3 +342,4 @@ def tanimoto_sim(origin, estimate):
     '''
 
     return SIM
+

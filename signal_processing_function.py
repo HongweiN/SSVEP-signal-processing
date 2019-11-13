@@ -106,7 +106,6 @@ def mlr_analysis(data, target):
 
     return RC, RI, R2
 
-
 #%% signal extraction
 def sig_extract(coef, data, target, intercept=None):
     '''
@@ -130,35 +129,22 @@ def sig_extract(coef, data, target, intercept=None):
 
     return estimate, extract
 
+#%% variance computation
+def var_estimation(X):
+    '''
+    Use superimposed method to compute multi-dimension data's variance
+    :param X: input data (n_events, n_epochs, n_times)
+    '''
+    var = np.zeors((X.shape[0], X.shape[2]))
+    for i in range(X.shape[0]):                 # i for n_events
+        ex = np.mat(np.mean(X[i,:,:], axis=0))  # (1, n_times)
+        temp = np.mat(np.ones((1, X.shape[1]))) # (1, n_epochs)
+        minus = (temp.T * ex).A                 # (n_epochs, n_times)
+        var[i,:] = np.mean((X[i,:,:] - minus)**2, axis=0)
+
+    return var
 
 #%% SNR computation
-def snr_sa(X):
-    '''
-    Use superimposed average method to compute SNR in MLR condition
-    :param X: input 3D signal array (n_events, n_epochs, n_times)
-    Assume yi refers to an observation from a single experiment
-    Assume E(y) refers to the mean of signals: E(y) = (y1+y2+...+yN)/N
-        and the random noise are decreased during the average process
-    So the SNR of pure SSVEP is computed like: SNR = sum((E(y))^2)/E(y^2)
-    '''
-    e_X = np.mean(X, axis=2)
-    p_s_X = np.zeros((X.shape[0]))
-    p_sn_X = np.zeros((X.shape[0], X.shape[1]))
-    
-    for i in range(X.shape[0]):
-        p_s_X[i] = (np.mean(e_X[i,:]))**2
-        
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            p_sn_X[i,j] = e_X[i,j]**2
-    
-    snr = np.zeros((X.shape[0], X.shape[1]))
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            snr[i,j] = 10 * math.log((p_s_X[i]/(p_sn_X[i,j]-p_s_X[i])), 10)
-            
-    return snr
-
 def snr_freq(X):
     '''
     Compute SNR of SSVEP in frequency domain
@@ -187,10 +173,35 @@ def snr_freq(X):
     
     return snr
 
-def snr_time(X):
+def snr_time(X, mode):
     '''
+    Two method for SNR computation
+        (1) Compute SNR and return time sequency
+        (2) Use superimposed average method:
+    :param X: input data (one-channel) (n_events, n_epochs, n_times) 
+    :param mode: choose method
     '''
+    if mode == 'time':
+        snr = np.zeors((X.shape[0], X,shape[2]))    # (n_events, n_times)
+        # basic object's size: (n_epochs, n_times)
+        for i in range(X.shape[0]):                 # i for n_events
+            ex = np.mat(np.mean(X[i,:,:], axis=0))  # (1, n_times)
+            temp = np.mat(np.ones((1, X.shape[1]))) # (1, n_epochs)
+            minus = (temp.T * ex).A                 # (n_epochs, n_times)
+            var = np.mean((X[i,:,:] - minus)**2, axis=0)
+            snr[i,:] = ex/var
+    
+    if mode == 'average':
+        snr = np.zeros((X.shape[0]))
 
+        for i in range(X.shape[0]):
+            ex = np.mat(np.mean(X[i,:,:], axis=0))
+            temp = np.mat(np.ones((1, X.shape[1])))
+            minus = (temp.T * ex).A
+            var = np.mean((X[i,:,:] - minus)**2, axis=0)
+            snr[i] = 20 * np.log10(np.sum(ex)/np.sum(var))
+
+    return snr
 
 #%% baseline correction
 def zero_mean(X):
@@ -212,7 +223,6 @@ def zero_mean(X):
             for j in range(X.shape[1]):
                 Y[i,j,:]=X[i,j,:]-np.mean(X[i,j,:])            
     return Y
-
 
 #%% time-frequency transform
 def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
@@ -290,7 +300,6 @@ def tfr_stft(X, sfreq, freqs, mode):
     Use STFT(short-time fourier transform) to do time-frequency transform
     '''
 
-
 #%% power spectral density
 def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     '''
@@ -316,7 +325,6 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
 
     return psds, freqs
 
-
 #%% frequency spectrum
 def precise_fft(X, ):
     '''
@@ -325,7 +333,6 @@ def precise_fft(X, ):
     :param n_fft: fft points
     6
     '''
-
 
 #%% cosine similarity
 def cos_sim(X, Y, mode):
@@ -365,7 +372,6 @@ def cca_coef(X, Y):
     :param Y: data 2 (actually equal to data 1)
     '''
     cca = CCA(n_components=1)
-
 
 #%% inter-channel correlation coefficient
 def corr_coef(X, mode):

@@ -206,8 +206,6 @@ s_ies_w2, s_iex_w2 = SPF.sig_extract(sp_w2, sig_i, sig_o)
 # signal part data (use w3):
 s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o)
 
-#%% Variance
-
 #%% Cosine similarity (background part): normal
 # w1 estimate (w1 model) & w1 original, mlr, normal similarity, the same below
 w1_w1_m_nsim = SPF.cos_sim(w1_o, w1_mes_w1, mode='normal')
@@ -236,7 +234,37 @@ w3_w3_i_tsim = SPF.cos_sim(w3_o, w3_mes_w3, mode='normal')
 
 #%% Precise FFT transform
 
+#%% Variance
+# original signal variance
+var_o_t = var_estimation(sig_o)
+
+# extract signal variance (w1 model) 
+var_w1_m_t = var_estimation(w1_mex_w1)
+var_w1_i_t = var_estimation(w1_iex_w1)
+
+# extract signal variance (w2 model) 
+var_w2_m_t = var_estimation(w2_mex_w2)
+var_w2_i_t = var_estimation(w2_iex_w2)
+
+# extract signal variance (w3 model) 
+var_w3_m_t = var_estimation(w3_mex_w3)
+var_w3_i_t = var_estimation(w3_iex_w3)
+
 #%% SNR in time domain
+# original signal snr
+snr_o_t = snr_time(sig_o, mode='time')
+
+# extract signal snr (w1 model) 
+snr_w1_m_t = snr_time(w1_mex_w1, mode='time')
+snr_w1_i_t = snr_time(w1_iex_w1, mode='time')
+
+# extract signal snr (w2 model) 
+snr_w2_m_t = snr_time(w2_mex_w2, mode='time')
+snr_w2_i_t = snr_time(w2_iex_w2, mode='time')
+
+# extract signal snr (w3 model) 
+snr_w3_m_t = snr_time(w3_mex_w3, mode='time')
+snr_w3_i_t = snr_time(w3_iex_w3, mode='time')
 
 #%% SNR in frequency domain
 

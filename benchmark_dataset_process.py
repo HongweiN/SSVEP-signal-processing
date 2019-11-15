@@ -136,6 +136,7 @@ signal_data = signal_data['signal_data']
 # w1 model data: 0-500ms
 w1_i = w1[:,:,43:48,:]
 w1_o = w1[:,:,56,:]
+w1_total = w1[:,:,[43,44,45,46,47,56],:]
 
 # w2 model data: 0-250ms
 w2_i = w2[:,:,43:48,:]
@@ -148,6 +149,7 @@ w3_o = w3[:,:,56,:]
 # signal part data: 500ms-1250ms
 sig_i = signal_data[:,:,43:48,:]
 sig_o = signal_data[:,:,56,:]
+sig = signal_data[:,:,[43,44,45,46,47,56],:]
 
 #%% Inter-channel correlation analysis: canonical correlation analysis (CCA)
 
@@ -178,12 +180,12 @@ def bina_corr(X,Y):
 compare_corr = bina_corr(w1_corr_sp, sig_corr_sp)
 
 #%% Inter-channel correlation analysis: Pearson correlation
-w1_corr_sp = SPF.corr_coef(w1, mode='pearson')
-w2_corr_sp = SPF.corr_coef(w2, mode='pearson')
-w3_corr_sp = SPF.corr_coef(w3, mode='pearson')
+w1_corr_sp = SPF.corr_coef(w1_total, mode='pearson')
+#w2_corr_sp = SPF.corr_coef(w2, mode='pearson')
+#w3_corr_sp = SPF.corr_coef(w3, mode='pearson')
 
 # may need to compute in different parts
-sig_corr_sp = SPF.corr_coef(signal_data[:,:,?,:], mode='pearson')
+sig_corr_sp = SPF.corr_coef(sig, mode='pearson')
 
 #%% Spatial filter: multi-linear regression method
 # regression coefficient, intercept, R^2
@@ -214,10 +216,13 @@ s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, ri_w3, mode='b')
 sp_w1 = SPF.inv_spa(w1_i, w1_o)
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
 w1_ies_w1, w1_iex_w1 = SPF.sig_extract(sp_w1, w1_i, w1_o, 0, mode='a')
+# w1 model's goodness of fit
+gf_w1 = SPF.fit_goodness(w1_o, w1_ies_w1, chans=5)
 
 # the same but w2 part data:
 sp_w2 = SPF.inv_spa(w2_i, w2_o)
 w2_ies_w2, w2_iex_w2 = SPF.sig_extract(sp_w2, w2_i, w2_o, 0, mode='a')
+gf_w2 = SPF.fit_goodness(w2_o, w2_ies_w2, chans=5)
 
 # the same but w3 part data (use w2):
 w2_ies_w3, w2_iex_w3 = SPF.sig_extract(sp_w2, w3_i, w3_o, 0, mode='a')
@@ -225,6 +230,7 @@ w2_ies_w3, w2_iex_w3 = SPF.sig_extract(sp_w2, w3_i, w3_o, 0, mode='a')
 # the same but w3 part data (use w3):
 sp_w3 = SPF.inv_spa(w3_i, w3_o)
 w3_ies_w3, w3_iex_w3 = SPF.sig_extract(sp_w3, w3_i, w3_o, 0, mode='a')
+gf_w3 = SPF.fit_goodness(w3_o, w3_ies_w3, chans=5)
 
 # signal part data (use w1):
 s_ies_w1, s_iex_w1 = SPF.sig_extract(sp_w1, sig_i, sig_o, 0, mode='a')
@@ -302,43 +308,91 @@ snr_w3_i_t = SPF.snr_time(s_iex_w3, mode='time')
 
 #%%*************************Part II: plot figures*************************
 #%% Model descrpition (Comoplex)
-fig = plt.figure(figsize=(20,12))
-gs = GridSpec(3, 5, figure=fig)
+fig = plt.figure(figsize=(24,24))
+fig.suptitle(r'$\ Model\ Description$', fontsize=30, fontweight='bold')
+gs = GridSpec(6, 7, figure=fig)
 
 # 1. Boxplot of R^2 
+X = gf_w1.flatten()
+Y = gf_w2.flatten()
+Z = gf_w3.flatten()
+
+xmin = min(np.min(X), np.min(Y), np.min(Z)) - 0.05
+
+R2 = np.zeros((720))
+R2[0:240] = X
+R2[240:480] = Y
+R2[480:720] = Z
+model = ['w1' for i in range(240)]+['w2' for i in range(240)]+['w3' for i in range(240)]
+R2 = pd.DataFrame({r'$\ model$': model, r'$\ R^2$': R2})
+
+order=['w1', 'w2', 'w3']
+sns.set(style="whitegrid")
+
+ax1 = fig.add_subplot(gs[0:4, 0:4])
+ax1.set_title(r"$\ 3\ model's\ R^2$", fontsize=26)
+ax1.tick_params(axis='both', labelsize=22)
+ax1.set_xlim((xmin, 1.05))
+ax1 = sns.boxplot(x=r'$\ R^2$', y=r'$\ model$', data=R2, notch=True,
+                  linewidth=2.5, orient='h', fliersize=10)
+ax1 = sns.swarmplot(x=r'$\ R^2$', y=r'$\ model$', data=R2, color='dimgrey',
+                    orient='h', size=5)
+ax1.set_xlabel(r'$\ R^2\ values$', fontsize=22)
+ax1.set_ylabel(r'$\ Models$', fontsize=22)
+
 
 # 2. Histogram of R^2
-# 3. Inter-channel correlation (2 parts)
-# 4. Waveform in time domain
-X = 
-Y = 
+ax2 = fig.add_subplot(gs[4:, 0:4])
+ax2.set_title(r'$\ Distribution\ of\ R^2$', fontsize=26)
+ax2.set_xlabel(r'$\ R^2\ values$', fontsize=22)
+ax2.set_ylabel(r'$\ Frequence$', fontsize=22)
+ax2.tick_params(axis='both', labelsize=22)
+ax2.set_xlim((xmin, 1.05))
+ax2 = sns.kdeplot(X, shade=True, label=r'$\ w1$')
+ax2 = sns.kdeplot(Y, shade=True, label=r'$\ w2$')
+ax2 = sns.kdeplot(Z, shade=True, label=r'$\ w3$')
+ax2.legend(loc='best', fontsize=16)
 
-compare_corr = X - Y
+#del X, Y, Z
+
+
+# 3. Inter-channel correlation (2 parts + compare)
+X = w1_corr_sp
+Y = sig_corr_sp
+Z = X - Y
 
 vmin = min(np.min(X), np.min(Y))
 vmax = max(np.max(X), np.max(Y))
 
-inter_chan = cm.get_cmap('Blues', 6)
+inter_chan = cm.get_cmap('Blues', 64)
 
-fig, axes = plt.subplots(1, 3, figsize=(24,6))
-fig.subtitle(r'$\ Inter-channel\ correlation$', fontsize=26, fontweight='bold')
+ax3 = fig.add_subplot(gs[0:2, 4:])
+mesh = ax3.pcolormesh(X, cmap=inter_chan, vmin=vmin, vmax=vmax)
+ax3.set_title(r'$\ Rest\ part$', fontsize=26)
+ax3.set_xlabel(r'$\ Channels$', fontsize=22)
+ax3.set_ylabel(r'$\ Channels$', fontsize=22)
+ax3.tick_params(axis='both', labelsize=22)
+fig.colorbar(mesh, ax=ax3)
 
-mesh = axes[0].pcolormesh(X, cmap=inter_chan, vmin=vmin, vmax=vmax)
-axes[0].set_title(r'$\ rest\ part$', fontsize=20)
-axes[0].set_xlabel(r'$\ channels$', fontsize=20)
-axes[0].set_ylabel(r'$\ channels$', fontsize=20)
-axes[0].tick_params(axis='both', labelsize=20)
-fig.colorbar(mesh, ax=axes[0])
+ax4 = fig.add_subplot(gs[2:4, 4:])
+mesh = ax4.pcolormesh(Y, cmap=inter_chan, vmin=vmin, vmax=vmax)
+ax4.set_title(r'$\ Signal\ part$', fontsize=26)
+ax4.set_xlabel(r'$\ Channels$', fontsize=22)
+ax4.set_ylabel(r'$\ Channels$', fontsize=22)
+ax4.tick_params(axis='both', labelsize=22)
+fig.colorbar(mesh, ax=ax4)
 
-mesh = axes[1].pcolormesh(Y, cmap=inter_chan, vmin=vmin, vmax=vmax)
-axes[1].set_title(r'$\ signal\ part$', fontsize=20)
-fig.colorbar(mesh, ax=axes[1])
+ax5 = fig.add_subplot(gs[4:, 4:])
+mesh = ax5.pcolormesh(Z, cmap=inter_chan, vmin=np.min(X-Y), vmax=np.max(X-Y))
+ax5.set_title(r'$\ Rest\ -\ Signal$', fontsize=26)
+ax5.set_xlabel(r'$\ Channels$', fontsize=22)
+ax5.set_ylabel(r'$\ Channels$', fontsize=22)
+ax5.tick_params(axis='both', labelsize=22)
+fig.colorbar(mesh, ax=ax5)
 
-mesh = axes[2].pcolormesh(compare_corr, cmap=inter_chan,
-           vmin=np.min(compare_corr), vmax=np.max(compare_corr))
-fig.colorbar(mesh, ax=axes[2])
-
-plt.show()
+fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
+                    hspace=1.000, wspace=1.000)
+plt.savefig(r'E:\fuck.png', dpi=600)
 
 #%%
 fig, axes = plt.subplots(2,1, figsize=(16,16))

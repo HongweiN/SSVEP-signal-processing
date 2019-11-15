@@ -8,23 +8,25 @@ Continuously updating...
 1. Spatial filter: 
     (1) Multi-linear regression
     (2) Inverse array
-2. Signal estimate & extraction
-3. SNR computarion: 
+    (3) Goodness of fit
+2. Variance computation
+3. Signal estimate & extraction
+4. SNR computarion: 
     (1) Superimposed average
     (2) SSVEP frequency domain
     (3) SSVEP time domain
-4. Baseline correction: (zero mean method)
-5. Time-frequency transform:
+5. Baseline correction: (zero mean method)
+6. Time-frequency transform:
     (1) Morlet wavelet
     (2) Short-time Fourier transform (STFT)
-6. Power spectral density: (Welch method)
-7. Precise FFT transform
-8. Cosine similarity:
+7. Power spectral density: (Welch method)
+8. Precise FFT transform
+9. Cosine similarity:
     (1) Normal
     (2) Tanimoto (Generalized Jaccard)
-9. Canonical correlation analysis (CCA)
-10. Spearman correlation coefficient (inter-channel)
-11. Residual analysis
+10. Canonical correlation analysis (CCA)
+11. Spearman correlation coefficient (inter-channel)
+12. Residual analysis
  
 
 @author: Brynhildr
@@ -46,11 +48,11 @@ def inv_spa(data, target):
     Y=AX, Y (X.T) ((XX.T)^(-1))= A
     Use mat() to transform array to matrix to apply linear computation
     Use .A to transform matrix to array to apply normal functions
-    :param data: input model (n_stims, n_epochs, n_chans, n_times)
-    :param target: output model (n_stims, n_epochs, n_times)
-    :param coef: bool, if True, return filter coefficients A
+    :param data: input model (n_events, n_epochs, n_chans, n_times)
+    :param target: output model (n_events, n_epochs, n_times)
     '''
-    a = np.zeros((data.shape[0], data.shape[1], data.shape[2]))
+    # spatial filter coefficients (n_events, n_epochs, n_chans)
+    A = np.zeros((data.shape[0], data.shape[1], data.shape[2]))
 
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
@@ -61,12 +63,30 @@ def inv_spa(data, target):
 
             xxt = x * xt                  # matrix multiplication (N,N)
             ixxt = xxt.I                  # inverse matrix (N,N)
-            a[i,j,:] = y * xt * ixxt      # A =Y*(X.T)*((XX.T)^(-1)): (1,N)
+            A[i,j,:] = y * xt * ixxt      # A =Y*(X.T)*((XX.T)^(-1)): (1,N)
+            
+    return A
 
-    a = a.A                               # transform matrix to array
 
-    return a
-
+def fit_goodness(X,Y):
+    '''
+    Compute goodness of fit in non-linear-regression occasion
+    :param X: original signal (n_events, n_epochs, n_times)
+    :param Y: estimate signal (n_events, n_epochs, n_times)
+    '''
+    # R^2: R2 (n_events, n_epochs)
+    R2 = np.zeros((X.shape[0], X.shape[1]))
+    correc_co = (X.shape[3]-1) / (X.shape[3]- X.shape[2] - 1)
+    
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            RSS = np.sum((X[i,j,:] - Y[i,j,:])**2)
+            TSS = np.sum((X[i,j,:] - np.mean(X[i,j,:]))**2)
+            R2[i,j] = 1 - (RSS/TSS) * correc_co
+    
+    return R2
+    
+    
 def mlr_analysis(data, target):
     '''
     Do multi-linear regression repeatedly
@@ -106,8 +126,9 @@ def mlr_analysis(data, target):
 
     return RC, RI, R2
 
+
 #%% signal extraction
-def sig_extract(coef, data, target, intercept=None):
+def sig_extract(coef, data, target, intercept, mode):
     '''
     :param coef: from spatial filter or regression (n_events, n_epochs, n_chans)
     :param data: input data (n_events, n_epochs, n_chans, n_times)
@@ -120,14 +141,15 @@ def sig_extract(coef, data, target, intercept=None):
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(data[i,j,:,:])).A
-            if intercept == None:
+            if mode == 'a':
                 continue
-            else:
+            if mode == 'b':
                 estimate[i,j,:] += intercept[i,j]
     
     extract =  target - estimate
 
     return estimate, extract
+
 
 #%% variance computation
 def var_estimation(X):
@@ -142,7 +164,8 @@ def var_estimation(X):
         minus = (temp.T * ex).A                 # (n_epochs, n_times)
         var[i,:] = np.mean((X[i,:,:] - minus)**2, axis=0)
 
-    return var
+    return var # (n_events, n_times)
+
 
 #%% SNR computation
 def snr_freq(X):
@@ -173,6 +196,7 @@ def snr_freq(X):
     
     return snr
 
+
 def snr_time(X, mode):
     '''
     Two method for SNR computation
@@ -182,12 +206,13 @@ def snr_time(X, mode):
     :param mode: choose method
     '''
     if mode == 'time':
-        snr = np.zeors((X.shape[0], X,shape[2]))    # (n_events, n_times)
+        snr = np.zeros((X.shape[0], X.shape[2]))    # (n_events, n_times)
         # basic object's size: (n_epochs, n_times)
         for i in range(X.shape[0]):                 # i for n_events
             ex = np.mat(np.mean(X[i,:,:], axis=0))  # (1, n_times)
             temp = np.mat(np.ones((1, X.shape[1]))) # (1, n_epochs)
             minus = (temp.T * ex).A                 # (n_epochs, n_times)
+            ex = (ex.A) ** 2
             var = np.mean((X[i,:,:] - minus)**2, axis=0)
             snr[i,:] = ex/var
     
@@ -202,6 +227,7 @@ def snr_time(X, mode):
             snr[i] = 20 * np.log10(np.sum(ex)/np.sum(var))
 
     return snr
+
 
 #%% baseline correction
 def zero_mean(X):
@@ -223,6 +249,7 @@ def zero_mean(X):
             for j in range(X.shape[1]):
                 Y[i,j,:]=X[i,j,:]-np.mean(X[i,j,:])            
     return Y
+
 
 #%% time-frequency transform
 def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
@@ -294,11 +321,13 @@ def tfr_morlet(X, sfreq, freqs, n_cycles, mode):
                           freqs=freqs, n_cycles=n_cycles, output='avg_power_itc')
         return API
     
+    
 def tfr_stft(X, sfreq, freqs, mode):
     '''
     Basic library is mne
     Use STFT(short-time fourier transform) to do time-frequency transform
     '''
+
 
 #%% power spectral density
 def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
@@ -315,8 +344,8 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     :param freqs: frequencies used in psd analysis
     '''
     #num_freqs = (np.arange(n_fft//2+1, dtype=float)*(sfreq/n_fft)).shape[0]
-    psds = np.zeros((X.shape[0], X.shape[1], 103))
-    freqs = np.zeros((X.shape[0], X.shape[1], 103))
+    psds = np.zeros((X.shape[0], X.shape[1], 151))
+    freqs = np.zeros((X.shape[0], X.shape[1], 151))
     
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
@@ -324,6 +353,7 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
                     fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
 
     return psds, freqs
+
 
 #%% frequency spectrum
 def precise_fft(X, ):
@@ -333,6 +363,7 @@ def precise_fft(X, ):
     :param n_fft: fft points
     6
     '''
+
 
 #%% cosine similarity
 def cos_sim(X, Y, mode):
@@ -364,6 +395,7 @@ def cos_sim(X, Y, mode):
                 
     return sim
 
+
 #%% Canonical correlation analysis (CCA)
 def cca_coef(X, Y):
     '''
@@ -372,6 +404,7 @@ def cca_coef(X, Y):
     :param Y: data 2 (actually equal to data 1)
     '''
     cca = CCA(n_components=1)
+
 
 #%% inter-channel correlation coefficient
 def corr_coef(X, mode):
@@ -386,12 +419,16 @@ def corr_coef(X, mode):
         for i in range(X.shape[0]):
             for j in range(X.shape[1]):
                 corr[i,j,:,:] = np.corrcoef(X[i,j,:,:])
+                
+        corr = np.mean(np.mean(corr, axis=0), axis=0)
 
     if mode == 'spearman':
         for i in range(X.shape[0]):
             for j in range(X.shape[1]):
                 temp = pd.DataFrame(X[i,j,:,:].T)
                 corr[i,j,:,:] = temp.corr('spearman')
+                
+        corr = np.mean(np.mean(corr, axis=0), axis=0)
     
     return corr
 

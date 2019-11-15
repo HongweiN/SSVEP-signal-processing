@@ -31,7 +31,7 @@ import signal_processing_function as SPF
 #%%*************************Part I: processing data*************************
 #%% Load benchmark dataset & relative information
 # load data from .mat file
-eeg = io.loadmat(r'E:\dataset\data\S01.mat')
+eeg = io.loadmat(r'E:\dataset\data\S15.mat')
 info = io.loadmat(r'E:\dataset\Freq_Phase.mat')
 
 data = eeg['data']
@@ -88,15 +88,14 @@ del temp, i, file, filelist, filepath, full_path
 f_data = np.zeros((40,6,64,1500))
 for i in range(data.shape[0]):
     f_data[i,:,:,:] = filter_data(data[i,:,:,:], sfreq=sfreq, l_freq=5,
-                      h_freq=20, n_jobs=6)
+                      h_freq=40, n_jobs=6)
 
-del data, i
+#del data, i
 
 # get data for linear regression
 w1 = f_data[:,:,:,0:125]
 w2 = f_data[:,:,:,0:63]
 w3 = f_data[:,:,:,63:125]
-w4 = f_data[:,:,:,1250:]
 
 # get data for comparision
 signal_data = f_data[:,:,:,125:1375]
@@ -104,10 +103,10 @@ signal_data = f_data[:,:,:,125:1375]
 del f_data
 
 # save model data to release RAM, reload before use
-w1_path = r'E:\dataset\model_data\S01\w1'
-w2_path = r'E:\dataset\model_data\S01\w2'
-w3_path = r'E:\dataset\model_data\S01\w3'
-s_path = r'E:\dataset\signal_data\S01'
+w1_path = r'E:\dataset\model_data\S15\w1'
+w2_path = r'E:\dataset\model_data\S15\w2'
+w3_path = r'E:\dataset\model_data\S15\w3'
+s_path = r'E:\dataset\signal_data\S15'
 
 io.savemat(w1_path, {'w1':w1})
 io.savemat(w2_path, {'w2':w2})
@@ -119,37 +118,37 @@ del w1_path, w2_path, w3_path, s_path
 
 #%% Reload data 
 # data size: (n_events, n_epochs, n_chans, n_times) 
-w1 = io.loadmat(r'E:\dataset\model_data\S01\w1.mat')
+w1 = io.loadmat(r'E:\dataset\model_data\S15\w1.mat')
 w1 = w1['w1']
-w2 = io.loadmat(r'E:\dataset\model_data\S01\w2.mat')
+w2 = io.loadmat(r'E:\dataset\model_data\S15\w2.mat')
 w2 = w2['w2']
-w3 = io.loadmat(r'E:\dataset\model_data\S01\w3.mat')
+w3 = io.loadmat(r'E:\dataset\model_data\S15\w3.mat')
 w3 = w3['w3']
-signal_data = io.loadmat(r'E:\dataset\signal_data\S01.mat')
+signal_data = io.loadmat(r'E:\dataset\signal_data\S15.mat')
 signal_data = signal_data['signal_data']
 
 #%% Divide input&output data for model
 
 # pick input channels: P1, P3, P5, P7, PZ
-# choose output channels: PO4
+# choose output channels: O2
 
 # w1 model data: 0-500ms
-w1_i = w1[:,:,43:48,:]
-w1_o = w1[:,:,56,:]
-w1_total = w1[:,:,[43,44,45,46,47,56],:]
+w1_i = w1[:,:,[27,40,41,49,50,51],:]
+w1_o = w1[:,:,61,:]
+#w1_total = w1[:,:,[43,44,45,46,47,56],:]
 
 # w2 model data: 0-250ms
-w2_i = w2[:,:,43:48,:]
-w2_o = w2[:,:,56,:]
+w2_i = w2[:,:,[27,40,41,49,50,51],:]
+w2_o = w2[:,:,61,:]
 
 # w3 model data: 250-500ms
-w3_i = w3[:,:,43:48,:]
-w3_o = w3[:,:,56,:]
+w3_i = w3[:,:,[27,40,41,49,50,51],:]
+w3_o = w3[:,:,61,:]
 
 # signal part data: 500ms-1250ms
-sig_i = signal_data[:,:,43:48,:]
-sig_o = signal_data[:,:,56,:]
-sig = signal_data[:,:,[43,44,45,46,47,56],:]
+sig_i = signal_data[:,:,[27,40,41,49,50,51],:]
+sig_o = signal_data[:,:,61,:]
+#sig = signal_data[:,:,[43,44,45,46,47,56],:]
 
 #%% Inter-channel correlation analysis: canonical correlation analysis (CCA)
 
@@ -264,10 +263,10 @@ w2_w3_i_tsim = SPF.cos_sim(w3_o, w2_ies_w3, mode='normal')
 w3_w3_i_tsim = SPF.cos_sim(w3_o, w3_ies_w3, mode='normal')
 
 #%% Power spectrum density
-w1_p, f = SPF.welch_p(s_iex_w1, 250, 0, 30, 1250, 0, 1250)
-w2_p, f = SPF.welch_p(s_iex_w2, 250, 0, 30, 1250, 0, 1250)
-w3_p, f = SPF.welch_p(s_iex_w3, 250, 0, 30, 1250, 0, 1250)
-sig_p, f = SPF.welch_p(sig_o, 250, 0, 30, 1250, 0, 1250)
+w1_p, f = SPF.welch_p(s_iex_w1, 250, 0, 50, 1250, 0, 1250)
+w2_p, f = SPF.welch_p(s_iex_w2, 250, 0, 50, 1250, 0, 1250)
+w3_p, f = SPF.welch_p(s_iex_w3, 250, 0, 50, 1250, 0, 1250)
+sig_p, f = SPF.welch_p(sig_o, 250, 0, 50, 1250, 0, 1250)
 
 #%% Precise FFT transform
 
@@ -392,7 +391,7 @@ fig.colorbar(mesh, ax=ax5)
 
 fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
                     hspace=1.000, wspace=1.000)
-plt.savefig(r'E:\fuck.png', dpi=600)
+#plt.savefig(r'E:\fuck.png', dpi=600)
 
 
 #%% plot SNR

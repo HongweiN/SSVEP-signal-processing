@@ -394,7 +394,8 @@ fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990,
                     hspace=1.000, wspace=1.000)
 plt.savefig(r'E:\fuck.png', dpi=600)
 
-#%%
+
+#%% plot SNR
 fig, axes = plt.subplots(2,1, figsize=(16,16))
 
 axes[0].set_title('signal', fontsize=20)
@@ -417,7 +418,8 @@ axes[1].plot(snr_w3_i_t[7,:], label='w3:63-125')
 axes[1].tick_params(axis='both', labelsize=20)
 axes[1].legend(loc='best', fontsize=20)
 
-#%%
+
+#%% plot PSD
 plt.title('signal psd', fontsize=20)
 plt.xlabel('frequency/Hz', fontsize=20)
 plt.plot(f[1,1,:], np.mean(sig_p[7,:,:], axis=0), label='origin:125-1375')

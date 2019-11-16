@@ -25,7 +25,10 @@ Continuously updating...
     (1) Normal
     (2) Tanimoto (Generalized Jaccard)
 10. Canonical correlation analysis (CCA)
-11. Spearman correlation coefficient (inter-channel)
+11. Inter-channel correlation
+    (1) Spearman method
+    (2) Pearson method
+    (3) Binarizaiton of compare correlation array
 12. Residual analysis
  
 
@@ -68,15 +71,16 @@ def inv_spa(data, target):
     return A
 
 
-def fit_goodness(X,Y):
+def fit_goodness(X, Y, chans):
     '''
     Compute goodness of fit in non-linear-regression occasion
     :param X: original signal (n_events, n_epochs, n_times)
     :param Y: estimate signal (n_events, n_epochs, n_times)
+    :param chans: number of regression data' channels
     '''
     # R^2: R2 (n_events, n_epochs)
     R2 = np.zeros((X.shape[0], X.shape[1]))
-    correc_co = (X.shape[3]-1) / (X.shape[3]- X.shape[2] - 1)
+    correc_co = (X.shape[2] - 1) / (X.shape[2] - chans -1)
     
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
@@ -128,7 +132,7 @@ def mlr_analysis(data, target):
 
 
 #%% signal extraction
-def sig_extract(coef, data, target, intercept, mode):
+def sig_extract(coef, data, target, intercept):
     '''
     :param coef: from spatial filter or regression (n_events, n_epochs, n_chans)
     :param data: input data (n_events, n_epochs, n_chans, n_times)
@@ -141,10 +145,7 @@ def sig_extract(coef, data, target, intercept, mode):
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(data[i,j,:,:])).A
-            if mode == 'a':
-                continue
-            if mode == 'b':
-                estimate[i,j,:] += intercept[i,j]
+            estimate[i,j,:] += intercept[i,j]
     
     extract =  target - estimate
 
@@ -344,8 +345,8 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     :param freqs: frequencies used in psd analysis
     '''
     #num_freqs = (np.arange(n_fft//2+1, dtype=float)*(sfreq/n_fft)).shape[0]
-    psds = np.zeros((X.shape[0], X.shape[1], 151))
-    freqs = np.zeros((X.shape[0], X.shape[1], 151))
+    psds = np.zeros((X.shape[0], X.shape[1], 251))
+    freqs = np.zeros((X.shape[0], X.shape[1], 251))
     
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
@@ -432,3 +433,19 @@ def corr_coef(X, mode):
     
     return corr
 
+
+def bina_corr(X,Y, th):
+    '''
+    Compare two correlation array and do binarization
+    :param X&Y: two input array (n_chans, n_chans)
+    :param th: threshold
+    '''
+    compare = X-Y
+    for i in range(X.shape[0]):
+        for j in range(X.shape[0]):
+            if compare[i,j] > th:
+                compare[i,j] = 1
+            else:
+                compare[i,j] = 0
+    
+    return compare

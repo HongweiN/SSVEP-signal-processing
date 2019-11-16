@@ -135,7 +135,7 @@ signal_data = signal_data['signal_data']
 # w1 model data: 0-500ms
 w1_i = w1[:,:,[27,40,41,49,50,51],:]
 w1_o = w1[:,:,61,:]
-#w1_total = w1[:,:,[43,44,45,46,47,56],:]
+w1_total = w1[:,:,[43,44,45,46,47,56],:]
 
 # w2 model data: 0-250ms
 w2_i = w2[:,:,[27,40,41,49,50,51],:]
@@ -148,95 +148,100 @@ w3_o = w3[:,:,61,:]
 # signal part data: 500ms-1250ms
 sig_i = signal_data[:,:,[27,40,41,49,50,51],:]
 sig_o = signal_data[:,:,61,:]
-#sig = signal_data[:,:,[43,44,45,46,47,56],:]
+sig = signal_data[:,:,[43,44,45,46,47,56],:]
 
 #%% Inter-channel correlation analysis: canonical correlation analysis (CCA)
 
 #%% Inter-channel correlation analysis: Spearman correlation
 w1_corr_sp = SPF.corr_coef(w1, 'spearman')
+w1_pick_corr_sp = SPF.corr_coef(w1, 'spearman')
+
 w2_corr_sp = SPF.corr_coef(w2, 'spearman')
 w3_corr_sp = SPF.corr_coef(w3, 'spearman')
 
 # may need to compute in different parts
 sig_corr_sp = SPF.corr_coef(signal_data, mode='spearman')
+sig_pick_corr_sp = SPF.corr_coef(sig, 'spearman')
 
-#%% Binarization
-def bina_corr(X,Y):
-    '''
-    Compare two correlation array and do binarization
-    :param X&Y: two input array (n_chans, n_chans)
-    '''
-    compare = X-Y
-    for i in range(X.shape[0]):
-        for j in range(X.shape[0]):
-            if compare[i,j] > 0.05:
-                compare[i,j] = 1
-            else:
-                compare[i,j] = 0
-    
-    return compare
+compare = w1_corr_sp - sig_corr_sp
 
-compare_corr = bina_corr(w1_corr_sp, sig_corr_sp)
+for i in range(64):
+    for j in range(64):
+        if compare < 0.03:
+            compare = 0
+
+#%% Binarization (if neccessary)
+compare_corr = SPF.bina_corr(w1_corr_sp, sig_corr_sp)
 
 #%% Inter-channel correlation analysis: Pearson correlation
-w1_corr_sp = SPF.corr_coef(w1_total, mode='pearson')
-#w2_corr_sp = SPF.corr_coef(w2, mode='pearson')
-#w3_corr_sp = SPF.corr_coef(w3, mode='pearson')
+w1_corr_sp = SPF.corr_coef(w1, 'pearson')
+w1_pick_corr_sp = SPF.corr_coef(w1, 'pearson')
+
+w2_corr_sp = SPF.corr_coef(w2, 'pearson')
+w3_corr_sp = SPF.corr_coef(w3, 'pearson')
 
 # may need to compute in different parts
-sig_corr_sp = SPF.corr_coef(sig, mode='pearson')
+sig_corr_sp = SPF.corr_coef(signal_data, mode='pearson')
+sig_pick_corr_sp = SPF.corr_coef(sig, 'pearson')
 
+compare = w1_corr_sp - sig_corr_sp
+
+for i in range(64):
+    for j in range(64):
+        if compare < 0.03:
+            compare = 0
+            
 #%% Spatial filter: multi-linear regression method
 # regression coefficient, intercept, R^2
 rc_w1, ri_w1, r2_w1 = SPF.mlr_analysis(w1_i, w1_o)
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
-w1_mes_w1, w1_mex_w1 = SPF.sig_extract(rc_w1, w1_i, w1_o, ri_w1, mode='b')
+w1_mes_w1, w1_mex_w1 = SPF.sig_extract(rc_w1, w1_i, w1_o, ri_w1)
 
 # the same but w2 part data:
-rc_w2, ri_w2, r2_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i, 0,  mode='a')
-w2_mes_w2, w2_mex_w2 = SPF.sig_extract(rc_w2, w2_i, w2_o, ri_w2, mode='b')
+rc_w2, ri_w2, r2_w2 = SPF.mlr_analysis(w2_i, w2_o, w2_i, 0)
+w2_mes_w2, w2_mex_w2 = SPF.sig_extract(rc_w2, w2_i, w2_o, ri_w2)
 
 # the same but w3 part data (use w2)
-w2_mes_w3, w2_mex_w3 = SPF.sig_extract(rc_w2, w3_i, w3_o, ri_w2, mode='b')
+w2_mes_w3, w2_mex_w3 = SPF.sig_extract(rc_w2, w3_i, w3_o, ri_w2)
 
 # the same but w3 part data (use w3)
-rc_w3, ri_w3, r2_w3 = SPF.mlr_analysis(w3_i, w3_o, w3_i, 0, mode='a')
-w3_mes_w3, w3_mex_w3 = SPF.sig_extract(rc_w3, w3_i, w3_o, ri_w3, mode='b')
+rc_w3, ri_w3, r2_w3 = SPF.mlr_analysis(w3_i, w3_o, w3_i, 0)
+w3_mes_w3, w3_mex_w3 = SPF.sig_extract(rc_w3, w3_i, w3_o, ri_w3)
 
 # signal part data (use w1):
-s_mes_w1, s_mex_w1 = SPF.sig_extract(rc_w1, sig_i, sig_o, ri_w1, mode='b')
+s_mes_w1, s_mex_w1 = SPF.sig_extract(rc_w1, sig_i, sig_o, ri_w1)
 # signal part data (use w2):
-s_mes_w2, s_mex_w2 = SPF.sig_extract(rc_w2, sig_i, sig_o, ri_w2, mode='b')
+s_mes_w2, s_mex_w2 = SPF.sig_extract(rc_w2, sig_i, sig_o, ri_w2)
 # signal part data (use w3): 
-s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, ri_w3, mode='b')
+s_mes_w3, s_mex_w3 = SPF.sig_extract(rc_w3, sig_i, sig_o, ri_w3)
 
 #%% Spatial filter: inverse array method
 # filter coefficient
 sp_w1 = SPF.inv_spa(w1_i, w1_o)
 # w1 estimate & extract data: (n_events, n_epochs, n_times)
-w1_ies_w1, w1_iex_w1 = SPF.sig_extract(sp_w1, w1_i, w1_o, 0, mode='a')
+w1_ies_w1, w1_iex_w1 = SPF.sig_extract(sp_w1, w1_i, w1_o, 0)
 # w1 model's goodness of fit
 gf_w1 = SPF.fit_goodness(w1_o, w1_ies_w1, chans=5)
 
 # the same but w2 part data:
 sp_w2 = SPF.inv_spa(w2_i, w2_o)
-w2_ies_w2, w2_iex_w2 = SPF.sig_extract(sp_w2, w2_i, w2_o, 0, mode='a')
+w2_ies_w2, w2_iex_w2 = SPF.sig_extract(sp_w2, w2_i, w2_o, 0)
 gf_w2 = SPF.fit_goodness(w2_o, w2_ies_w2, chans=5)
 
 # the same but w3 part data (use w2):
-w2_ies_w3, w2_iex_w3 = SPF.sig_extract(sp_w2, w3_i, w3_o, 0, mode='a')
+w2_ies_w3, w2_iex_w3 = SPF.sig_extract(sp_w2, w3_i, w3_o, 0)
 
 # the same but w3 part data (use w3):
 sp_w3 = SPF.inv_spa(w3_i, w3_o)
-w3_ies_w3, w3_iex_w3 = SPF.sig_extract(sp_w3, w3_i, w3_o, 0, mode='a')
+w3_ies_w3, w3_iex_w3 = SPF.sig_extract(sp_w3, w3_i, w3_o, 0)
 gf_w3 = SPF.fit_goodness(w3_o, w3_ies_w3, chans=5)
 
 # signal part data (use w1):
-s_ies_w1, s_iex_w1 = SPF.sig_extract(sp_w1, sig_i, sig_o, 0, mode='a')
+s_ies_w1, s_iex_w1 = SPF.sig_extract(sp_w1, sig_i, sig_o, 0)
 # signal part data (use w2):
-s_ies_w2, s_iex_w2 = SPF.sig_extract(sp_w2, sig_i, sig_o, 0, mode='a')
+s_ies_w2, s_iex_w2 = SPF.sig_extract(sp_w2, sig_i, sig_o, 0)
 # signal part data (use w3):
-s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o, 0, mode='a')
+s_ies_w3, s_iex_w3 = SPF.sig_extract(sp_w3, sig_i, sig_o, 0)
 
 #%% Cosine similarity (background part): normal
 # w1 estimate (w1 model) & w1 original, mlr, normal similarity, the same below
@@ -359,6 +364,7 @@ ax2.legend(loc='best', fontsize=16)
 X = w1_corr_sp
 Y = sig_corr_sp
 Z = X - Y
+pick_chans = ['', '', '', '', '', '']
 
 vmin = min(np.min(X), np.min(Y))
 vmax = max(np.max(X), np.max(Y))

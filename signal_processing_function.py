@@ -344,9 +344,9 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     :param psds: power spectral density array (n_events, n_epochs, n_freqs)
     :param freqs: frequencies used in psd analysis
     '''
-    #num_freqs = (np.arange(n_fft//2+1, dtype=float)*(sfreq/n_fft)).shape[0]
-    psds = np.zeros((X.shape[0], X.shape[1], 251))
-    freqs = np.zeros((X.shape[0], X.shape[1], 251))
+    num_freqs = int(math.floor((fmax - fmin) / (sfreq / n_fft)) + 1)
+    psds = np.zeros((X.shape[0], X.shape[1], num_freqs))
+    freqs = np.zeros((X.shape[0], X.shape[1], num_freqs))
     
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):

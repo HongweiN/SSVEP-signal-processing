@@ -30,6 +30,9 @@ Continuously updating...
     (2) Pearson method
     (3) Binarizaiton of compare correlation array
 12. Residual analysis
+13. Checkboard plot
+    (1) Figure
+    (2) Annotation
  
 
 @author: Brynhildr
@@ -37,12 +40,19 @@ Continuously updating...
 #%% import modules
 import numpy as np
 import math
+
 import mne
 from mne.time_frequency import tfr_array_morlet, psd_array_welch, stft
+
 from sklearn.linear_model import LinearRegression
 from sklearn.cross_decomposition import CCA
+
 from scipy import signal
+
 import pandas as pd
+
+import matplotlib
+import matplotlib.pyplot as plt
 
 #%% spatial filter
 def inv_spa(data, target):
@@ -145,7 +155,10 @@ def sig_extract(coef, data, target, intercept):
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
             estimate[i,j,:] = (np.mat(coef[i,j,:]) * np.mat(data[i,j,:,:])).A
-            estimate[i,j,:] += intercept[i,j]
+            if intercept == 0:
+                continue
+            else:
+                estimate[i,j,:] += intercept[i,j]
     
     extract =  target - estimate
 
@@ -350,8 +363,9 @@ def welch_p(X, sfreq, fmin, fmax, n_fft, n_overlap, n_per_seg):
     
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
-            psds[i,j,:], freqs[i,j,:] = psd_array_welch(X[i,j,:], sfreq=sfreq, fmin=fmin,
-                    fmax=fmax, n_fft=n_fft, n_overlap=n_overlap, n_per_seg=n_per_seg)
+            psds[i,j,:], freqs[i,j,:] = psd_array_welch(X[i,j,:], sfreq=sfreq,
+                                        fmin=fmin, fmax=fmax, n_fft=n_fft,
+                                        n_overlap=n_overlap, n_per_seg=n_per_seg)
 
     return psds, freqs
 
@@ -434,7 +448,7 @@ def corr_coef(X, mode):
     return corr
 
 
-def bina_corr(X,Y, th):
+def bina_corr(X, Y, th):
     '''
     Compare two correlation array and do binarization
     :param X&Y: two input array (n_chans, n_chans)
@@ -449,3 +463,108 @@ def bina_corr(X,Y, th):
                 compare[i,j] = 0
     
     return compare
+
+
+#%% checkboard plot
+def check_plot(data, row_labels, col_labels, ax=None, cbar_kw={},
+               cbarlabel="", **kwargs):
+    '''
+    Create a checkboard figure from a numpy array
+    :param data: 2D data array (N,N)
+    :param row_labels: A list or array of length N with the labels for the rows
+    :param col_labels: A list or array of length M with the labels for the columns
+    :param ax: A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  
+              If not provided, use current axes or create a new one.  
+              Optional.
+    :param cbar_kw: A dictionary with arguments to `matplotlib.Figure.colorbar`.
+                    Optional.
+    :param cbarlabel: The label for the colorbar.  Optional.
+    :param **kwargs: All other arguments are forwarded to `imshow`.
+    '''
+    if not ax:
+        ax = plt.gca()
+    
+    # plot the checkboard
+    im = ax.imshow(data, **kwargs)
+    
+    # create colorbar
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va='bottom')
+    
+    # show all ticks
+    ax.set_xticks(np.arange(data.shape[1]))
+    ax.set_yticks(np.arange(data.shape[0]))
+    
+    # add respective labels
+    ax.set_xticklabels(col_labels)
+    ax.set_yticklabels(row_labels)
+    
+    # horizontal axes labeling appear on top
+    ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+    
+    # rotate the tick labels & set alignment
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha='right',
+             rotation_mode='anchor')
+    
+    # turn spines off and create white grid
+    for edge, spine in ax.spines.items():
+        spine.set_visible(False)
+        
+    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.grid(which='minor', color='w', linestyle='-', linewidth=3)
+    ax.tick_params(which='minor', bottom=False, left=False)
+    
+    return im, cbar
+    
+
+def check_annotate(im, data=None, valfmt="{x:.2f}",
+                   textcolors=["black", "white"], threshold=None, **textkw):
+    '''
+    A function to annotate a checkboard figure
+    :param im: the image to be labeled
+    :param data: data used to annotate
+    :param valfmt: The format of the annotations inside the heatmap.  
+                   This should either use the string format method. 
+                   e.g. "$ {x:.2f}", or be a `matplotlib.ticker.Formatter`.  
+                   Optional.
+    :param textcolors: 1st is used for values below threshold; 2nd is used
+            for values over threshold
+    :param threshold: Value in data units according to which the colors from
+            textcolors are applied.  
+                      If None (the default) uses the middle of the colormap as
+            separation. Optional.
+    :param **textkw: All other arguments are forwarded to each call to `text` 
+            used to create the text labels.
+    '''
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+        
+    # normalize the threshold
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold  =im.norm(data.max()) / 2.
+    
+    # set default alignment to center, but allow it to be overwritten be textkw
+    kw = dict(horizontalalignment='center', verticalalignment='center')
+    kw.update(textkw)
+    
+    # get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+        
+    # loop over the data and create a 'text' for each 'pixel'
+    # choose the text's color depending on the data
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[int(im.norm(data[i,j]) > threshold)])
+            text = im.axes.text(j, i, valfmt(data[i,j], None), **kw)
+            texts.append(text)
+            
+    return texts
+
+
+#%%
+    

@@ -342,7 +342,7 @@ snr_w3_i_t = SPF.snr_time(s_iex_w3, mode='time')
 #%%*************************Part II: plot figures*************************
 #%% Model descrpition (Comoplex)
 fig = plt.figure(figsize=(24,24))
-fig.suptitle(r'$\ Model\ Description$', fontsize=30, fontweight='bold')
+#fig.suptitle(r'$\ Model\ Description$', fontsize=30, fontweight='bold')
 gs = GridSpec(6, 7, figure=fig)
 
 # 1. Boxplot of R^2 
@@ -393,43 +393,47 @@ del X, Y, Z
 X = w1_pick_corr_sp
 Y = sig_pick_corr_sp
 Z = X - Y
+
+# format decimal number & remove leading zeros & hide the diagonal elements
+def func(x, pos):  
+    return '{:.3f}'.format(x).replace('0.', '.')
+    
 pick_chans = ['Cz','CP6','TP8','P4','P6','P8','Oz']  # change each time
 
 vmin = min(np.min(X), np.min(Y))
 vmax = max(np.max(X), np.max(Y))
 
-inter_chan = cm.get_cmap('Blues', 64)
-
 ax3 = fig.add_subplot(gs[0:2, 4:])
-mesh = ax3.pcolormesh(X, cmap=inter_chan, vmin=vmin, vmax=vmax)
-ax3.set_title(r'$\ Rest\ part$', fontsize=26)
-ax3.set_xticks(np.arange(len(pick_chans)))
-ax3.set_xticklabels(pick_chans)
+im, _ = SPF.check_plot(data=X, row_labels=pick_chans, col_labels=pick_chans,
+                       ax=ax3, cmap='Blues', vmin=vmin, vmax=vmax)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
+ax3.set_title(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
 ax3.set_xlabel(r'$\ Channels$', fontsize=22)
 ax3.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax3.tick_params(axis='both', labelsize=22)
-fig.colorbar(mesh, ax=ax3)
+ax3.tick_params(axis='both', labelsize=22)
 
 ax4 = fig.add_subplot(gs[2:4, 4:])
-mesh = ax4.pcolormesh(Y, cmap=inter_chan, vmin=vmin, vmax=vmax)
-ax4.set_title(r'$\ Signal\ part$', fontsize=26)
+im, _ = SPF.check_plot(data=Y, row_labels=pick_chans, col_labels=pick_chans,
+                       ax=ax4, cmap='Blues', vmin=vmin, vmax=vmax)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
+ax4.set_title(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
 ax4.set_xlabel(r'$\ Channels$', fontsize=22)
 ax4.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax4.tick_params(axis='both', labelsize=22)
-fig.colorbar(mesh, ax=ax4)
+ax4.tick_params(axis='both', labelsize=22)
 
 ax5 = fig.add_subplot(gs[4:, 4:])
-mesh = ax5.pcolormesh(Z, cmap=inter_chan, vmin=np.min(X-Y), vmax=np.max(X-Y))
-ax5.set_title(r'$\ Rest\ -\ Signal$', fontsize=26)
+im, _ = SPF.check_plot(data=Z, row_labels=pick_chans, col_labels=pick_chans,
+                       ax=ax5, cmap='Reds', vmin=np.min(Z), vmax=np.max(Z))
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
+ax5.set_title(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
 ax5.set_xlabel(r'$\ Channels$', fontsize=22)
 ax5.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax5.tick_params(axis='both', labelsize=22)
-fig.colorbar(mesh, ax=ax5)
+ax5.tick_params(axis='both', labelsize=22)
 
 fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
                     hspace=1.000, wspace=1.000)
 
-#plt.savefig(r'E:\fuck.png', dpi=600)
+plt.savefig(r'E:\fuck.png', dpi=600)
 
 
 #%% Signal waveform plot

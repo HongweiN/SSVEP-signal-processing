@@ -489,6 +489,7 @@ def check_plot(data, row_labels, col_labels, ax=None, cbar_kw={},
     
     # create colorbar
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.tick_params(labelsize=20)
     cbar.ax.set_ylabel(cbarlabel, rotation=-90, va='bottom')
     
     # show all ticks
@@ -513,7 +514,7 @@ def check_plot(data, row_labels, col_labels, ax=None, cbar_kw={},
     ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
     ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
     ax.grid(which='minor', color='w', linestyle='-', linewidth=3)
-    ax.tick_params(which='minor', bottom=False, left=False)
+    ax.tick_params(which='minor', bottom=False, left=False, labelsize=22)
     
     return im, cbar
     

@@ -396,7 +396,7 @@ Z = X - Y
 
 # format decimal number & remove leading zeros & hide the diagonal elements
 def func(x, pos):  
-    return '{:.3f}'.format(x).replace('0.', '.')
+    return '{:.4f}'.format(x).replace('0.', '.').replace('1.0000', '').replace('.0000', '')
     
 pick_chans = ['Cz','CP6','TP8','P4','P6','P8','Oz']  # change each time
 
@@ -410,6 +410,7 @@ SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
 ax3.set_title(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
 ax3.set_xlabel(r'$\ Channels$', fontsize=22)
 ax3.set_ylabel(r'$\ Channels$', fontsize=22)
+ax3.align_labels()
 ax3.tick_params(axis='both', labelsize=22)
 
 ax4 = fig.add_subplot(gs[2:4, 4:])
@@ -419,6 +420,7 @@ SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
 ax4.set_title(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
 ax4.set_xlabel(r'$\ Channels$', fontsize=22)
 ax4.set_ylabel(r'$\ Channels$', fontsize=22)
+ax4.align_labels()
 ax4.tick_params(axis='both', labelsize=22)
 
 ax5 = fig.add_subplot(gs[4:, 4:])
@@ -428,12 +430,13 @@ SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
 ax5.set_title(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
 ax5.set_xlabel(r'$\ Channels$', fontsize=22)
 ax5.set_ylabel(r'$\ Channels$', fontsize=22)
+ax5.align_labels()
 ax5.tick_params(axis='both', labelsize=22)
 
 fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
                     hspace=1.000, wspace=1.000)
 
-plt.savefig(r'E:\fuck.png', dpi=600)
+#plt.savefig(r'E:\fuck.png', dpi=600)
 
 
 #%% Signal waveform plot
@@ -465,7 +468,7 @@ axes[1].tick_params(axis='both', labelsize=20)
 axes[1].legend(loc='best', fontsize=20)
 
 
-#%% plot PSD
+#%% Signal power spectrum density plot
 plt.title('signal psd', fontsize=20)
 plt.xlabel('frequency/Hz', fontsize=20)
 plt.plot(f[1,1,:], np.mean(sig_p[7,:,:], axis=0), label='origin:125-1375')
@@ -474,7 +477,7 @@ plt.plot(f[1,1,:], np.mean(w2_p[7,:,:], axis=0), label='w2:0-63')
 plt.plot(f[1,1,:], np.mean(w3_p[7,:,:], axis=0), label='w3:63-125')
 plt.legend(loc='best', fontsize=20)
 
-#%%
+#%% plot SNR (use zoom effect)
 def strain(X):
     strain = np.zeros((40,50))
     
@@ -485,13 +488,12 @@ def strain(X):
             k += 25
     return strain
 
-#%%
 snr1 = strain(snr_o_t)
 snr2 = strain(snr_w1_i_t)
 snr3 = strain(snr_w2_i_t)
 snr4 = strain(snr_w3_i_t)
 
-#%%
+
 plt.plot(snr1[7,:], label='origin:125-1375')
 plt.plot(snr2[7,:], label='w1:0-125')
 plt.plot(snr3[7,:], label='w2:0-63')

@@ -360,7 +360,7 @@ model = ['w1' for i in range(240)]+['w2' for i in range(240)]+['w3' for i in ran
 R2 = pd.DataFrame({r'$\ model$': model, r'$\ R^2$': R2})
 
 order=['w1', 'w2', 'w3']
-sns.set(style="whitegrid")
+#sns.set(style="whitegrid")
 
 ax1 = fig.add_subplot(gs[0:4, 0:4])
 ax1.set_title(r"$\ 3\ model's\ R^2$", fontsize=26)
@@ -396,7 +396,7 @@ Z = X - Y
 
 # format decimal number & remove leading zeros & hide the diagonal elements
 def func(x, pos):  
-    return '{:.3f}'.format(x).replace('0.', '.')
+    return '{:.4f}'.format(x).replace('0.', '.').replace('1.0000', '').replace('.0000', '')
     
 pick_chans = ['Cz','CP6','TP8','P4','P6','P8','Oz']  # change each time
 
@@ -407,35 +407,44 @@ ax3 = fig.add_subplot(gs[0:2, 4:])
 im, _ = SPF.check_plot(data=X, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax3, cmap='Blues', vmin=vmin, vmax=vmax)
 SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-ax3.set_title(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
-ax3.set_xlabel(r'$\ Channels$', fontsize=22)
-ax3.set_ylabel(r'$\ Channels$', fontsize=22)
-ax3.tick_params(axis='both', labelsize=22)
+#ax3.set_title(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
+#ax3.set_xlabel(r'$\ Channels$', fontsize=22)
+#ax3.set_ylabel(r'$\ Channels$', fontsize=22)
+#ax3.tick_params(axis='both', labelsize=22)
 
 ax4 = fig.add_subplot(gs[2:4, 4:])
 im, _ = SPF.check_plot(data=Y, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax4, cmap='Blues', vmin=vmin, vmax=vmax)
 SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-ax4.set_title(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
-ax4.set_xlabel(r'$\ Channels$', fontsize=22)
-ax4.set_ylabel(r'$\ Channels$', fontsize=22)
-ax4.tick_params(axis='both', labelsize=22)
+#ax4.set_title(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
+#ax4.set_xlabel(r'$\ Channels$', fontsize=22)
+#ax4.set_ylabel(r'$\ Channels$', fontsize=22)
+#ax4.tick_params(axis='both', labelsize=22)
 
 ax5 = fig.add_subplot(gs[4:, 4:])
 im, _ = SPF.check_plot(data=Z, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax5, cmap='Reds', vmin=np.min(Z), vmax=np.max(Z))
 SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-ax5.set_title(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
-ax5.set_xlabel(r'$\ Channels$', fontsize=22)
-ax5.set_ylabel(r'$\ Channels$', fontsize=22)
-ax5.tick_params(axis='both', labelsize=22)
+#ax5.set_title(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
+#ax5.set_xlabel(r'$\ Channels$', fontsize=22)
+#ax5.set_ylabel(r'$\ Channels$', fontsize=22)
+#ax5.tick_params(axis='both', labelsize=22)
 
-fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
-                    hspace=1.000, wspace=1.000)
+#fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
+                    #hspace=1.000, wspace=1.000)
 
-plt.savefig(r'E:\fuck.png', dpi=600)
+#plt.savefig(r'E:\fuck.png', dpi=600)
 
-
+#%%
+fig, ax = plt.subplots()                    
+corr_matrix = Z
+im, _ = SPF.check_plot(corr_matrix, pick_chans, pick_chans, ax=ax,
+                cmap="PuOr", vmin=-1, vmax=1, cbarlabel="correlation coeff.")
+def func(x, pos):
+    return "{:.2f}".format(x).replace("0.", ".").replace("1.00", "")
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=7)
+plt.tight_layout()
+plt.show()
 #%% Signal waveform plot
 # 1. w1 part (w1 model): original & estimation & extraction
 # 2. w2 part (w2 model)

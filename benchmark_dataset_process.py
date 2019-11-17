@@ -360,36 +360,37 @@ model = ['w1' for i in range(240)]+['w2' for i in range(240)]+['w3' for i in ran
 R2 = pd.DataFrame({r'$\ model$': model, r'$\ R^2$': R2})
 
 order=['w1', 'w2', 'w3']
-#sns.set(style="whitegrid")
+sns.set(style='whitegrid')
 
 ax1 = fig.add_subplot(gs[0:4, 0:4])
-ax1.set_title(r"$\ 3\ model's\ R^2$", fontsize=26)
+ax1.set_title(r"$\ 3\ model's\ R^2$", fontsize=30)
 ax1.tick_params(axis='both', labelsize=22)
 ax1.set_xlim((xmin, 1.05))
 ax1 = sns.boxplot(x=r'$\ R^2$', y=r'$\ model$', data=R2, notch=True,
                   linewidth=2.5, orient='h', fliersize=10)
 ax1 = sns.swarmplot(x=r'$\ R^2$', y=r'$\ model$', data=R2, color='dimgrey',
                     orient='h', size=5)
-ax1.set_xlabel(r'$\ R^2\ values$', fontsize=22)
-ax1.set_ylabel(r'$\ Models$', fontsize=22)
+ax1.set_xlabel(r'$\ R^2\ values$', fontsize=26)
+ax1.set_ylabel(r'$\ Models$', fontsize=26)
 
 
 # 2. Histogram of R^2
 ax2 = fig.add_subplot(gs[4:, 0:4])
-ax2.set_title(r'$\ Distribution\ of\ R^2$', fontsize=26)
-ax2.set_xlabel(r'$\ R^2\ values$', fontsize=22)
-ax2.set_ylabel(r'$\ Frequence$', fontsize=22)
+ax2.set_title(r'$\ Distribution\ of\ R^2$', fontsize=30)
+ax2.set_xlabel(r'$\ R^2\ values$', fontsize=26)
+ax2.set_ylabel(r'$\ Frequence$', fontsize=26)
 ax2.tick_params(axis='both', labelsize=22)
 ax2.set_xlim((xmin, 1.05))
 ax2 = sns.kdeplot(X, shade=True, label=r'$\ w1$')
 ax2 = sns.kdeplot(Y, shade=True, label=r'$\ w2$')
 ax2 = sns.kdeplot(Z, shade=True, label=r'$\ w3$')
-ax2.legend(loc='best', fontsize=16)
+ax2.legend(loc='best', fontsize=20)
 
 del X, Y, Z
 
 
 # 3. Inter-channel correlation (2 parts + compare)
+sns.set(style='white')
 X = w1_pick_corr_sp
 Y = sig_pick_corr_sp
 Z = X - Y
@@ -406,44 +407,44 @@ vmax = max(np.max(X), np.max(Y))
 ax3 = fig.add_subplot(gs[0:2, 4:])
 im, _ = SPF.check_plot(data=X, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax3, cmap='Blues', vmin=vmin, vmax=vmax)
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
-                   size=16, fontweight='bold')
-ax3.set_xlabel(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
-ax3.set_ylabel(r'$\ Channels$', fontsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=16)
+cbar = ax.figure
+ax3.set_xlabel(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=30)
+ax3.set_ylabel(r'$\ Channels$', fontsize=26)
 ax3.tick_params(axis='both', labelsize=22)
 
 ax4 = fig.add_subplot(gs[2:4, 4:])
 im, _ = SPF.check_plot(data=Y, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax4, cmap='Blues', vmin=vmin, vmax=vmax)
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
-                   size=16, fontweight='bold')
-ax4.set_xlabel(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
-ax4.set_ylabel(r'$\ Channels$', fontsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=16)
+ax4.set_xlabel(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=30)
+ax4.set_ylabel(r'$\ Channels$', fontsize=26)
 ax4.tick_params(axis='both', labelsize=22)
 
 ax5 = fig.add_subplot(gs[4:, 4:])
 im, _ = SPF.check_plot(data=Z, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax5, cmap='Reds', vmin=np.min(Z), vmax=np.max(Z))
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
-                   size=16, fontweight='bold')
-ax5.set_xlabel(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
-ax5.set_ylabel(r'$\ Channels$', fontsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=16)
+ax5.set_xlabel(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=30)
+ax5.set_ylabel(r'$\ Channels$', fontsize=23)
 ax5.tick_params(axis='both', labelsize=22)
 
 fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
-                    hspace=1.000, wspace=1.000)
+                    hspace=1.000, wspace=0.7)
 plt.savefig(r'E:\fuck.png', dpi=600)
 
-#%%
-fig, ax = plt.subplots()                    
-corr_matrix = Z
-im, _ = SPF.check_plot(corr_matrix, pick_chans, pick_chans, ax=ax,
-                cmap="PuOr", vmin=-1, vmax=1, cbarlabel="correlation coeff.")
-def func(x, pos):
-    return "{:.2f}".format(x).replace("0.", ".").replace("1.00", "")
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=7)
-plt.tight_layout()
-plt.show()
+
+#%% use sns module to plot heatmap
+#fig, ax = plt.subplots()                    
+#ax = sns.heatmap(Z, annot=True, fmt='.2g', linewidths=0.5, cmap='Reds', cbar=False,
+                 #xticklabels=pick_chans, yticklabels=pick_chans, vmin=np.min(Z),
+                 #vmax=np.max(Z))
+#cbar = ax.figure.colorbar(ax.collections[0])
+#cbar.ax.tick_params(labelsize=18)
+#plt.xticks(fontsize=16)
+#plt.yticks(fontsize=16)
+
+
 #%% Signal waveform plot
 # 1. w1 part (w1 model): original & estimation & extraction
 # 2. w2 part (w2 model)

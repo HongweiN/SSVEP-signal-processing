@@ -406,34 +406,33 @@ vmax = max(np.max(X), np.max(Y))
 ax3 = fig.add_subplot(gs[0:2, 4:])
 im, _ = SPF.check_plot(data=X, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax3, cmap='Blues', vmin=vmin, vmax=vmax)
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-#ax3.set_title(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
-#ax3.set_xlabel(r'$\ Channels$', fontsize=22)
-#ax3.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax3.tick_params(axis='both', labelsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
+                   size=16, fontweight='bold')
+ax3.set_xlabel(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=26)
+ax3.set_ylabel(r'$\ Channels$', fontsize=22)
+ax3.tick_params(axis='both', labelsize=22)
 
 ax4 = fig.add_subplot(gs[2:4, 4:])
 im, _ = SPF.check_plot(data=Y, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax4, cmap='Blues', vmin=vmin, vmax=vmax)
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-#ax4.set_title(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
-#ax4.set_xlabel(r'$\ Channels$', fontsize=22)
-#ax4.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax4.tick_params(axis='both', labelsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
+                   size=16, fontweight='bold')
+ax4.set_xlabel(r'$\ SSVEP\ part\ inter-channel\ correlation$', fontsize=26)
+ax4.set_ylabel(r'$\ Channels$', fontsize=22)
+ax4.tick_params(axis='both', labelsize=22)
 
 ax5 = fig.add_subplot(gs[4:, 4:])
 im, _ = SPF.check_plot(data=Z, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax5, cmap='Reds', vmin=np.min(Z), vmax=np.max(Z))
-SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=14)
-#ax5.set_title(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
-#ax5.set_xlabel(r'$\ Channels$', fontsize=22)
-#ax5.set_ylabel(r'$\ Channels$', fontsize=22)
-#ax5.tick_params(axis='both', labelsize=22)
+SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func),
+                   size=16, fontweight='bold')
+ax5.set_xlabel(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=26)
+ax5.set_ylabel(r'$\ Channels$', fontsize=22)
+ax5.tick_params(axis='both', labelsize=22)
 
-#fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
-                    #hspace=1.000, wspace=1.000)
-
-#plt.savefig(r'E:\fuck.png', dpi=600)
+fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
+                    hspace=1.000, wspace=1.000)
+plt.savefig(r'E:\fuck.png', dpi=600)
 
 #%%
 fig, ax = plt.subplots()                    

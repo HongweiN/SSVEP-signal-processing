@@ -389,7 +389,7 @@ ax2.legend(loc='best', fontsize=20)
 del X, Y, Z
 
 
-# 3. Inter-channel correlation (2 parts + compare)
+# 3. Inter-channel correlation (2 parts + comparision)
 sns.set(style='white')
 X = w1_pick_corr_sp
 Y = sig_pick_corr_sp
@@ -408,7 +408,6 @@ ax3 = fig.add_subplot(gs[0:2, 4:])
 im, _ = SPF.check_plot(data=X, row_labels=pick_chans, col_labels=pick_chans,
                        ax=ax3, cmap='Blues', vmin=vmin, vmax=vmax)
 SPF.check_annotate(im, valfmt=matplotlib.ticker.FuncFormatter(func), size=16)
-cbar = ax.figure
 ax3.set_xlabel(r'$\ w1\ part\ inter-channel\ correlation$', fontsize=30)
 ax3.set_ylabel(r'$\ Channels$', fontsize=26)
 ax3.tick_params(axis='both', labelsize=22)
@@ -429,9 +428,11 @@ ax5.set_xlabel(r'$\ Correlation\ comparision\ (w1-SSVEP)$', fontsize=30)
 ax5.set_ylabel(r'$\ Channels$', fontsize=23)
 ax5.tick_params(axis='both', labelsize=22)
 
+del X, Y, Z
+
 fig.subplots_adjust(top=0.949, bottom=0.05, left=0.049, right=0.990, 
                     hspace=1.000, wspace=0.7)
-plt.savefig(r'E:\fuck.png', dpi=600)
+plt.savefig(r'E:\dataset\model_description.png', dpi=600)
 
 
 #%% use sns module to plot heatmap
@@ -445,33 +446,36 @@ plt.savefig(r'E:\fuck.png', dpi=600)
 #plt.yticks(fontsize=16)
 
 
-#%% Signal waveform plot
-# 1. w1 part (w1 model): original & estimation & extraction
-# 2. w2 part (w2 model)
-# 3. w3 part (w2 model)
-# 4. w3 part (w3 model)
-# 5. signal part ()
-fig, axes = plt.subplots(2,1, figsize=(16,16))
+#%% Signal waveform & Time SNR (with zoom-in effect: 0-500ms/0-125points)
+# 1. signal waveform:
+    # (1) original
+    # (2) w1 model
+    # (3) w2 model
+    # (4) w3 model
+fig = plt.figure(figsize=(16,16))
+gs = GridSpec(6, 7, figure=fig)
 
-axes[0].set_title('signal', fontsize=20)
-axes[0].set_xlabel('time/ms', fontsize=20)
-axes[0].set_ylabel('SNR', fontsize=20)
-axes[0].plot(np.mean(sig_o[7,:,:], axis=0), label='origin:125-1375')
-axes[0].plot(np.mean(s_iex_w1[7,:,:], axis=0), label='w1:0-125')
-axes[0].plot(np.mean(s_iex_w2[7,:,:], axis=0), label='w2:0-63')
-axes[0].plot(np.mean(s_iex_w3[7,:,:], axis=0), label='w3:63-125')
-axes[0].tick_params(axis='both', labelsize=20)
-axes[0].legend(loc='upper right', fontsize=20)
+ax1 = fig.add_subplot(gs[,])
+ax1.set_title('signal', fontsize=20)
+ax1.set_xlabel('time/ms', fontsize=20)
+ax1.set_ylabel('SNR', fontsize=20)
+ax1.plot(np.mean(sig_o[7,:,:], axis=0), label='origin:125-1375')
+ax1.plot(np.mean(s_iex_w1[7,:,:], axis=0), label='w1:0-125')
+ax1.plot(np.mean(s_iex_w2[7,:,:], axis=0), label='w2:0-63')
+ax1.plot(np.mean(s_iex_w3[7,:,:], axis=0), label='w3:63-125')
+ax1.tick_params(axis='both', labelsize=20)
+ax1.legend(loc='upper right', fontsize=20)
 
-axes[1].set_title('time snr', fontsize=20)
-axes[1].set_xlabel('time/ms', fontsize=20)
-axes[1].set_ylabel('SNR', fontsize=20)
-axes[1].plot(snr_o_t[7,:], label='origin:125-1375')
-axes[1].plot(snr_w1_i_t[7,:], label='w1:0-125')
-axes[1].plot(snr_w2_i_t[7,:], label='w2:0-63')
-axes[1].plot(snr_w3_i_t[7,:], label='w3:63-125')
-axes[1].tick_params(axis='both', labelsize=20)
-axes[1].legend(loc='best', fontsize=20)
+ax2 = fig.add_subplot(gs[,])
+ax2.set_title('time snr', fontsize=20)
+ax2.set_xlabel('time/ms', fontsize=20)
+ax2.set_ylabel('SNR', fontsize=20)
+ax2.plot(snr_o_t[7,:], label='origin:125-1375')
+ax2.plot(snr_w1_i_t[7,:], label='w1:0-125')
+ax2.plot(snr_w2_i_t[7,:], label='w2:0-63')
+ax2.plot(snr_w3_i_t[7,:], label='w3:63-125')
+ax2.tick_params(axis='both', labelsize=20)
+ax2.legend(loc='best', fontsize=20)
 
 
 #%% plot PSD
